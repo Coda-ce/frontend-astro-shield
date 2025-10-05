@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asteroides Próximos - AstroShield</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0e27;
+            --bg-secondary: #1a1f3a;
+            --bg-panel: rgba(26, 31, 58, 0.95);
+            --text-primary: #e8eaf6;
+            --text-secondary: #b0b8d4;
+            --accent-primary: #00e5ff;
+            --accent-danger: #ff1744;
+            --accent-warning: #ffd600;
+            --accent-success: #00e676;
+            --border-color: rgba(0, 229, 255, 0.3);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, #1a1f3a 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        #header {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        h1 {
+            font-size: 28px;
+            color: var(--accent-primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-btn {
+            padding: 10px 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-btn:hover {
+            background: var(--accent-primary);
+            color: var(--bg-primary);
+            transform: translateY(-2px);
+        }
+
+        #controls {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-group label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .control-group select,
+        .control-group input {
+            padding: 8px 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        #search {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        #stats {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            flex: 1;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px 20px;
+            text-align: center;
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .stat-card .value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-card.danger .value { color: var(--accent-danger); }
+        .stat-card.success .value { color: var(--accent-success); }
+        .stat-card.warning .value { color: var(--accent-warning); }
+
+        #asteroid-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .asteroid-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .asteroid-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 229, 255, 0.2);
+            border-color: var(--accent-primary);
+        }
+
+        .asteroid-card.hazardous {
+            border-left: 4px solid var(--accent-danger);
+        }
+
+        .asteroid-card.safe {
+            border-left: 4px solid var(--accent-success);
+        }
+
+        .asteroid-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .asteroid-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .asteroid-id {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-family: 'Courier New', monospace;
+        }
+
+        .hazard-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .hazard-badge.danger {
+            background: var(--accent-danger);
+            color: white;
+        }
+
+        .hazard-badge.success {
+            background: var(--accent-success);
+            color: var(--bg-primary);
+        }
+
+        .asteroid-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .detail-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .detail-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .asteroid-footer {
+            display: flex;
+            gap: 10px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .btn {
+            flex: 1;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: var(--bg-primary);
+        }
+
+        .btn-primary:hover {
+            background: #00ccdd;
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-primary);
+        }
+
+        #loading {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--bg-secondary);
+            border-top: 4px solid var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .distance-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .dist-very-close { background: var(--accent-danger); }
+        .dist-close { background: #ff9933; }
+        .dist-moderate { background: var(--accent-warning); }
+        .dist-far { background: var(--accent-success); }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <h1>🛰️ Asteroides Próximos da Terra</h1>
+        <a href="index.html" class="back-btn">← Voltar para Simulação</a>
+    </div>
+
+    <div id="stats">
+        <div class="stat-card">
+            <div class="label">Total de Asteroides</div>
+            <div class="value" id="total-count">0</div>
+        </div>
+        <div class="stat-card danger">
+            <div class="label">⚠️ Potencialmente Perigosos</div>
+            <div class="value" id="hazardous-count">0</div>
+        </div>
+        <div class="stat-card success">
+            <div class="label">✅ Seguros</div>
+            <div class="value" id="safe-count">0</div>
+        </div>
+        <div class="stat-card warning">
+            <div class="label">📏 Mais Próximo</div>
+            <div class="value" id="closest-distance">- LD</div>
+        </div>
+    </div>
+
+    <div id="controls">
+        <div class="control-group" style="flex: 1;">
+            <label>🔍 Buscar:</label>
+            <input type="text" id="search" placeholder="Nome ou ID do asteroide...">
+        </div>
+
+        <div class="control-group">
+            <label>Ordenar por:</label>
+            <select id="sort">
+                <option value="distance">Distância (mais próximo)</option>
+                <option value="name">Nome (A-Z)</option>
+                <option value="size">Tamanho (maior)</option>
+                <option value="velocity">Velocidade (mais rápido)</option>
+                <option value="date">Data de aproximação</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>Filtrar:</label>
+            <select id="filter">
+                <option value="all">Todos</option>
+                <option value="hazardous">Apenas perigosos</option>
+                <option value="safe">Apenas seguros</option>
+                <option value="close">Muito próximos (< 1 LD)</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="loading">
+        <div class="loading-spinner"></div>
+        <p>Carregando asteroides da NASA NEO API...</p>
+    </div>
+
+    <div id="asteroid-list" style="display: none;"></div>
+
+    <div id="no-results" class="no-results" style="display: none;">
+        <h3>Nenhum asteroide encontrado</h3>
+        <p>Tente ajustar os filtros ou busca</p>
+    </div>
+
+    <script type="module" src="./asteroids-viewer.js"></script>
+</body>
+</html>

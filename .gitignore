@@ -1,0 +1,40 @@
+# NASA API Key (NUNCA commite sua chave!)
+config.js
+.env
+.env.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependency directories
+node_modules/
+
+# Three.js (biblioteca externa - instalar separadamente)
+three.js/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Cache
+.cache/
+*.cache
+
+# Build outputs (se adicionar build process)
+dist/
+build/
+
+# Temporary files
+tmp/
+temp/
+*.tmp

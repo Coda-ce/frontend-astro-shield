@@ -1,0 +1,54 @@
+MIT License
+
+Copyright (c) 2025 AstroShield - NASA Space Apps Challenge 2025
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+THIRD-PARTY LICENSES
+
+This project uses the following open-source libraries:
+
+1. Three.js (MIT License)
+   Copyright © 2010-2025 three.js authors
+   https://github.com/mrdoob/three.js
+
+2. NASA Open APIs (Public Domain)
+   Data provided by NASA's Near-Earth Object Web Service (NeoWs)
+   https://api.nasa.gov/
+
+3. USGS National Map (Public Domain)
+   Data provided by United States Geological Survey
+   https://www.usgs.gov/
+
+---
+
+ATTRIBUTION
+
+If you use this software in academic work, please cite:
+
+AstroShield (2025). Interactive Asteroid Impact Simulation Platform.
+NASA Space Apps Challenge 2025 - Meteor Madness Challenge.
+https://github.com/[your-username]/astroshield
+
+For scientific calculations, please cite the original papers:
+- Collins, G. S., et al. (2005). Earth Impact Effects Program
+- Ward, S. N., & Asphaug, E. (2000). Asteroid Impact Tsunami
+- Toon, O. B., et al. (1997). Environmental Perturbations Caused by Impacts

@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AstroShield - Cenários Históricos e Educacionais</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #e8eaf6;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #00e5ff;
+            margin-bottom: 20px;
+            font-size: 36px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #b0b8d4;
+            margin-bottom: 50px;
+        }
+
+        .scenario-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 60px;
+        }
+
+        .scenario-card {
+            background: rgba(26, 31, 58, 0.95);
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            border-radius: 12px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .scenario-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 229, 255, 0.3);
+            border-color: #00e5ff;
+        }
+
+        .scenario-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .scenario-icon {
+            font-size: 40px;
+            margin-right: 15px;
+        }
+
+        .scenario-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #00e5ff;
+        }
+
+        .scenario-subtitle {
+            font-size: 13px;
+            color: #b0b8d4;
+            margin-top: 3px;
+        }
+
+        .scenario-details {
+            margin: 15px 0;
+            padding: 15px;
+            background: #0a0e27;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .scenario-details strong {
+            color: #00e5ff;
+        }
+
+        .btn-simulate {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #00e5ff, #0099cc);
+            border: none;
+            border-radius: 8px;
+            color: #0a0e27;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .btn-simulate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 229, 255, 0.4);
+        }
+
+        .category-header {
+            margin: 60px 0 30px 0;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #00e5ff;
+        }
+
+        .category-header h2 {
+            color: #00e5ff;
+            font-size: 28px;
+        }
+
+        .category-header p {
+            color: #b0b8d4;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .danger-level {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-top: 10px;
+        }
+
+        .danger-low {
+            background: rgba(0, 230, 118, 0.2);
+            color: #00e676;
+            border: 1px solid #00e676;
+        }
+
+        .danger-medium {
+            background: rgba(255, 214, 0, 0.2);
+            color: #ffd600;
+            border: 1px solid #ffd600;
+        }
+
+        .danger-high {
+            background: rgba(255, 23, 68, 0.2);
+            color: #ff1744;
+            border: 1px solid #ff1744;
+        }
+
+        .danger-extreme {
+            background: rgba(156, 39, 176, 0.2);
+            color: #ab47bc;
+            border: 1px solid #ab47bc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛡️ AstroShield - Cenários de Simulação</h1>
+        <p class="subtitle">
+            Explore eventos históricos e cenários hipotéticos de impactos asteroidais.<br>
+            Clique em "Simular" para carregar os parâmetros no AstroShield.
+        </p>
+
+        <!-- EVENTOS HISTÓRICOS -->
+        <div class="category-header">
+            <h2>📜 Eventos Históricos Reais</h2>
+            <p>Recrie impactos que realmente aconteceram na Terra</p>
+        </div>
+
+        <div class="scenario-grid">
+            <!-- Tunguska -->
+            <div class="scenario-card">
+                <div class="scenario-header">
+                    <div class="scenario-icon">💥</div>
+                    <div>
+                        <div class="scenario-title">Evento de Tunguska</div>
+                        <div class="scenario-subtitle">Sibéria, Rússia • 30 junho 1908</div>
+                    </div>
+                </div>
+                <div class="scenario-details">
+                    <strong>Parâmetros:</strong><br>
+                    • Diâmetro: 60 m<br>
+                    • Velocidade: 27 km/s<br>
+                    • Ângulo: 30° (rasante)<br>
+                    • Densidade: 1500 kg/m³ (carbonáceo)<br>
+                    <br>
+                    <strong>Resultado:</strong><br>
+                    • Explosão aérea a 5-10 km de altitude<br>
+                    • 2.150 km² de floresta devastada<br>
+                    • Energia: 10-15 Megatons<br>
+                    • Sem cratera formada
+                </div>
+                <span class="danger-level danger-medium">Médio Impacto</span>
+                <button class="btn-simulate" onclick="loadScenario('tunguska')">⚡ Simular Tunguska</button>
+            </div>
+
+            <!-- Meteor Crater -->
+            <div class="scenario-card">
+                <div class="scenario-header">
+                    <div class="scenario-icon">🕳️</div>
+                    <div>
+                        <div class="scenario-title">Meteor Crater (Barringer)</div>
+                        <div class="scenario-subtitle">Arizona, EUA • ~50.000 anos atrás</div>
+                    </div>
+                </div>
+                <div class="scenario-details">
+                    <strong>Parâmetros:</strong><br>
+                    • Diâmetro: 50 m<br>
+                    • Velocidade: 12.8 km/s<br>
+                    • Ângulo: 80° (quase vertical)<br>
+                    • Densidade: 8000 kg/m³ (ferro-níquel)<br>
+                    <br>
+                    <strong>Resultado:</strong><br>
+                    • Cratera: 1.2 km de diâmetro, 170 m profundidade<br>
+                    • Energia: ~10 Megatons<br>
+                    • Cratera preservada até hoje
+                </div>
+                <span class="danger-level danger-medium">Médio Impacto</span>
+                <button class="btn-simulate" onclick="loadScenario('meteor-crater')">⚡ Simular Meteor Crater</button>
+            </div>
+
+            <!-- Chelyabinsk -->
+            <div class="scenario-card">
+                <div class="scenario-header">
+                    <div class="scenario-icon">🌠</div>
+                    <div>
+                        <div class="scenario-title">Meteoro de Chelyabinsk</div>
+                        <div class="scenario-subtitle">Rússia • 15 fevereiro 2013</div>
+                    </div>
+                </div>
+                <div class="scenario-details">
+                    <strong>Parâmetros:</strong><br>
+                    • Diâmetro: 20 m<br>
+                    • Velocidade: 19 km/s<br>
+                    • Ângulo: 18° (muito rasante)<br>
+                    • Densidade: 2500 kg/m³ (rochoso)<br>
+                    <br>
+                    <strong>Resultado:</strong><br>
+                    • Explosão aérea a 30 km de altitude<br>
+                    • Energia: ~500 kilotons<br>
+                    • 1.500 feridos (vidros quebrados)<br>
+                    • Evento registrado em vídeo
+                </div>
+                <span class="danger-level danger-low">Baixo Impacto</span>
+                <button class="btn-simulate" onclick="loadScenario('chelyabinsk')">⚡ Simular Chelyabinsk</button>
+            </div>
+
+            <!-- Chicxulub -->
+            <div class="scenario-card">
+                <div class="scenario-header">
+                    <div class="scenario-icon">🦖</div>
+                    <div>
+                        <div class="scenario-title">Impacto Chicxulub</div>
+                        <div class="scenario-subtitle">México • 66 milhões de anos atrás</div>
+                    </div>
+                </div>
+                <div class="scenario-details">
+                    <strong>Parâmetros:</strong><br>
+                    • Diâmetro: 10 km<br>
+                    • Velocidade: 20 km/s<br>
+                    • Ângulo: 60°<br>
+                    • Densidade: 2500 kg/m³ (rochoso)<br>
+                    <br>
+                    <strong>Resultado:</strong><br>
+                    • Cratera: 180 km de diâmetro<br>
+                    • Energia: ~100 milhões de Megatons<br>
+                    • Extinção em massa (75% das espécies)<br>
+                    • Inverno nuclear de décadas
+                </div>
+                <span class="danger-level danger-extreme">Extinção em Massa</span>
+                <button class="btn-simulate" onclick="loadScenario('chicxulub')">⚡ Simular Chicxulub</button>
+            </div>
+        </div>
+
+        <!-- CENÁRIOS HIPOTÉTICOS -->
+        <div class="category-header">
+            <h2>🎯 Cenários Hipotéticos Educacionais</h2>
+            <p>Simulações baseadas em asteroides conhecidos e situações plausíveis</p>
+        </div>
+
+        <div class="scenario-grid">
+            <!-- Apophis -->
+            <div class="scenario-card">
+                <div class="scenario-header">
+                    <div class="scenario-icon">⚠️</div>
+                    <div>
+                        <div class="scenario-title">Impacto de Apophis</div>
+                        <div class="scenario-subtitle">Cenário hipotético 2029</div>
+                    </div>
+                </div>
+                <div class="scenario-details">
+                    <strong>Parâmetros:</strong><br>
+                    • Diâmetro: 370 m<br>
+                    • Velocidade: 30.7 km/s<br>
+                    • Ângulo: 45°<br>
+                    • Densidade: 2500 kg/m³ (tipo S)<br>
+                    <br>
+                    <strong>Cenário:</strong><br>
+                    • Asteroide real que passará próximo em 2029<br>
+                    • Se impactasse: ~1,200 Megatons<br>
+                    • Devastaria área metropolitana inteira<br>
+                    • Risco atual: ZERO (passará a 31.000 km)
+                </div>
+                <span class="danger-level danger-high">Alto Impacto</span>
+                <button class="btn-simulate" onclick="loadScenario('apophis')">⚡ Simular Apophis</button>
+            </div>
+
+            <!-- Bennu -->
+            <div class="scenario-card">
+                <div class="scenario-header">
+                    <div class="scenario-icon">🛰️</div>
+                    <div>
+                        <div class="scenario-title">Impacto de Bennu</div>
+                        <div class="scenario-subtitle">Cenário hipotético final do século XXI</div>
+                    </div>
+                </div>
+                <div class="scenario-details">
+                    <strong>Parâmetros:</strong><br>
+                    • Diâmetro: 490 m<br>
+                    • Velocidade: 28 km/s<br>
+                    • Ângulo: 45°<br>
+                    • Densidade: 1500 kg/m³ (carbonáceo)<br>
+                    <br>
+                    <strong>Cenário:</strong><br>
+                    • Alvo da missão OSIRIS-REx da NASA<br>
+                    • Probabilidade de impacto: 1 em 2.700 (até 2200)<br>
+                    • Energia estimada: ~1,450 Megatons<br>
+                    • Cratera de ~8 km de diâmetro
+                </div>
+                <span class="danger-level danger-high">Alto Impacto</span>
+                <button class="btn-simulate" onclick="loadScenario('bennu')">⚡ Simular Bennu</button>
+            </div>
+
+            <!-- Impacto Oceânico -->
+            <div class="scenario-card">
+                <div class="scenario-header">
+                    <div class="scenario-icon">🌊</div>
+                    <div>
+                        <div class="scenario-title">Tsunami Asteroidal</div>
+                        <div class="scenario-subtitle">Oceano Atlântico</div>
+                    </div>
+                </div>
+                <div class="scenario-details">
+                    <strong>Parâmetros:</strong><br>
+                    • Diâmetro: 300 m<br>
+                    • Velocidade: 25 km/s<br>
+                    • Ângulo: 60°<br>
+                    • Local: Oceano Atlântico (0°, 0°)<br>
+                    <br>
+                    <strong>Cenário:</strong><br>
+                    • ~70% da Terra é oceano<br>
+                    • Tsunami inicial: 100+ metros<br>
+                    • Ondas atravessam oceanos inteiros<br>
+                    • Afeta costas de 3 continentes
+                </div>
+                <span class="danger-level danger-high">Alto Impacto</span>
+                <button class="btn-simulate" onclick="loadScenario('tsunami')">⚡ Simular Tsunami</button>
+            </div>
+
+            <!-- City Killer -->
+            <div class="scenario-card">
+                <div class="scenario-header">
+                    <div class="scenario-icon">🏙️</div>
+                    <div>
+                        <div class="scenario-title">"City Killer"</div>
+                        <div class="scenario-subtitle">Impacto urbano de asteroide médio</div>
+                    </div>
+                </div>
+                <div class="scenario-details">
+                    <strong>Parâmetros:</strong><br>
+                    • Diâmetro: 140 m<br>
+                    • Velocidade: 30 km/s<br>
+                    • Ângulo: 45°<br>
+                    • Local: Nova York<br>
+                    <br>
+                    <strong>Cenário:</strong><br>
+                    • Limite de "city killer" (140m+)<br>
+                    • Energia: ~400 Megatons<br>
+                    • Destruiria metrópole inteira<br>
+                    • Milhões de vítimas potenciais
+                </div>
+                <span class="danger-level danger-high">Alto Impacto</span>
+                <button class="btn-simulate" onclick="loadScenario('city-killer')">⚡ Simular City Killer</button>
+            </div>
+
+            <!-- Evento Regional -->
+            <div class="scenario-card">
+                <div class="scenario-header">
+                    <div class="scenario-icon">🌍</div>
+                    <div>
+                        <div class="scenario-title">Evento de Impacto Regional</div>
+                        <div class="scenario-subtitle">Asteroide de 1 km</div>
+                    </div>
+                </div>
+                <div class="scenario-details">
+                    <strong>Parâmetros:</strong><br>
+                    • Diâmetro: 1 km<br>
+                    • Velocidade: 20 km/s<br>
+                    • Ângulo: 45°<br>
+                    • Densidade: 2500 kg/m³<br>
+                    <br>
+                    <strong>Cenário:</strong><br>
+                    • Energia: ~47.000 Megatons<br>
+                    • Cratera de ~20 km<br>
+                    • Devastação continental<br>
+                    • Efeitos climáticos globais por anos
+                </div>
+                <span class="danger-level danger-extreme">Catástrofe Regional</span>
+                <button class="btn-simulate" onclick="loadScenario('regional')">⚡ Simular Regional</button>
+            </div>
+
+            <!-- Mini Asteroide -->
+            <div class="scenario-card">
+                <div class="scenario-header">
+                    <div class="scenario-icon">✨</div>
+                    <div>
+                        <div class="scenario-title">Mini Asteroide</div>
+                        <div class="scenario-subtitle">Evento comum (vários por ano)</div>
+                    </div>
+                </div>
+                <div class="scenario-details">
+                    <strong>Parâmetros:</strong><br>
+                    • Diâmetro: 10 m<br>
+                    • Velocidade: 17 km/s<br>
+                    • Ângulo: 45°<br>
+                    • Densidade: 2500 kg/m³<br>
+                    <br>
+                    <strong>Cenário:</strong><br>
+                    • Vários eventos por ano<br>
+                    • Geralmente queima na atmosfera<br>
+                    • Energia: ~10 kilotons<br>
+                    • Bola de fogo espetacular
+                </div>
+                <span class="danger-level danger-low">Baixo Impacto</span>
+                <button class="btn-simulate" onclick="loadScenario('mini')">⚡ Simular Mini</button>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin: 60px 0; padding: 30px; background: rgba(0, 229, 255, 0.1); border-radius: 12px;">
+            <h3 style="color: #00e5ff; margin-bottom: 15px;">💡 Nota Educacional</h3>
+            <p style="color: #b0b8d4; line-height: 1.8; max-width: 800px; margin: 0 auto;">
+                Todos os cenários são baseados em dados científicos reais. Eventos como Tunguska e Chelyabinsk
+                realmente aconteceram. Asteroides como Apophis e Bennu são monitorados ativamente pela NASA.
+                <br><br>
+                A probabilidade de um impacto catastrófico é extremamente baixa, mas a preparação e defesa
+                planetária são essenciais para proteger a Terra a longo prazo.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function loadScenario(scenarioName) {
+            const scenarios = {
+                'tunguska': {
+                    diameter: 60,
+                    velocity: 27,
+                    angle: 30,
+                    density: 1500,
+                    location: '60.8858,101.8942' // Tunguska, Sibéria
+                },
+                'meteor-crater': {
+                    diameter: 50,
+                    velocity: 12.8,
+                    angle: 80,
+                    density: 8000,
+                    location: '35.0275,-111.0224' // Arizona, EUA
+                },
+                'chelyabinsk': {
+                    diameter: 20,
+                    velocity: 19,
+                    angle: 18,
+                    density: 2500,
+                    location: '54.7977,61.3337' // Chelyabinsk, Rússia
+                },
+                'chicxulub': {
+                    diameter: 10000,
+                    velocity: 20,
+                    angle: 60,
+                    density: 2500,
+                    location: '21.2,-89.5' // Península de Yucatán, México
+                },
+                'apophis': {
+                    diameter: 370,
+                    velocity: 30.7,
+                    angle: 45,
+                    density: 2500,
+                    location: '40.7128,-74.0060' // NYC (hipotético)
+                },
+                'bennu': {
+                    diameter: 490,
+                    velocity: 28,
+                    angle: 45,
+                    density: 1500,
+                    location: '40.7128,-74.0060' // NYC (hipotético)
+                },
+                'tsunami': {
+                    diameter: 300,
+                    velocity: 25,
+                    angle: 60,
+                    density: 2500,
+                    location: '0,0' // Oceano Atlântico
+                },
+                'city-killer': {
+                    diameter: 140,
+                    velocity: 30,
+                    angle: 45,
+                    density: 2500,
+                    location: '40.7128,-74.0060' // NYC
+                },
+                'regional': {
+                    diameter: 1000,
+                    velocity: 20,
+                    angle: 45,
+                    density: 2500,
+                    location: '40.7128,-74.0060' // NYC (hipotético)
+                },
+                'mini': {
+                    diameter: 10,
+                    velocity: 17,
+                    angle: 45,
+                    density: 2500,
+                    location: '40.7128,-74.0060' // NYC
+                }
+            };
+
+            const scenario = scenarios[scenarioName];
+            if (!scenario) {
+                alert('Cenário não encontrado!');
+                return;
+            }
+
+            // Armazena parâmetros no localStorage
+            localStorage.setItem('astroshield_scenario', JSON.stringify(scenario));
+
+            // Redireciona para a página principal
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

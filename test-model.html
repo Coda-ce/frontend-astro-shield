@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Carregamento - earth_3d.glb</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: monospace;
+            background: #0a0e27;
+            color: #e8eaf6;
+            padding: 20px;
+        }
+
+        #canvas-container {
+            width: 100%;
+            height: 500px;
+            border: 2px solid #00e5ff;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        #log {
+            background: #1a1f3a;
+            padding: 15px;
+            border-radius: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #00e5ff;
+            padding-left: 10px;
+        }
+
+        .log-error {
+            border-left-color: #ff1744;
+            color: #ff1744;
+        }
+
+        .log-success {
+            border-left-color: #00e676;
+            color: #00e676;
+        }
+
+        .log-info {
+            border-left-color: #ffd600;
+            color: #ffd600;
+        }
+
+        h1 {
+            color: #00e5ff;
+            margin-bottom: 20px;
+        }
+
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 6px;
+            background: #1a1f3a;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Diagnóstico de Carregamento do Modelo 3D</h1>
+
+    <div class="status">
+        <strong>Status do Servidor:</strong> <span id="server-status">Verificando...</span><br>
+        <strong>Caminho Atual:</strong> <span id="current-path">-</span><br>
+        <strong>Arquivo earth_3d.glb:</strong> <span id="file-status">Verificando...</span>
+    </div>
+
+    <div id="canvas-container">
+        <p style="text-align: center; padding-top: 200px;">Aguardando carregamento...</p>
+    </div>
+
+    <h2>📋 Log de Diagnóstico:</h2>
+    <div id="log"></div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "./three.js/build/three.module.js",
+                "three/addons/": "./three.js/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+        const logContainer = document.getElementById('log');
+
+        function log(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            console.log(message);
+        }
+
+        // 1. Verificar se servidor está servindo arquivos
+        log('🔍 Iniciando diagnóstico...', 'info');
+        log(`📍 URL atual: ${window.location.href}`, 'info');
+        document.getElementById('current-path').textContent = window.location.href;
+
+        // 2. Tentar acessar o arquivo GLB diretamente
+        async function checkFileExists() {
+            const paths = [
+                './earth_3d.glb',
+                '/earth_3d.glb',
+                'earth_3d.glb',
+                '../earth_3d.glb'
+            ];
+
+            for (const path of paths) {
+                try {
+                    log(`🔍 Verificando: ${path}`, 'info');
+                    const response = await fetch(path, { method: 'HEAD' });
+
+                    if (response.ok) {
+                        const size = response.headers.get('content-length');
+                        log(`✅ Arquivo encontrado em: ${path}`, 'success');
+                        log(`📦 Tamanho: ${(size / 1024 / 1024).toFixed(2)} MB`, 'success');
+                        document.getElementById('file-status').textContent = `✅ Encontrado (${path})`;
+                        document.getElementById('file-status').style.color = '#00e676';
+                        return path;
+                    }
+                } catch (error) {
+                    log(`❌ Não encontrado em: ${path}`, 'error');
+                }
+            }
+
+            log(`❌ Arquivo earth_3d.glb não encontrado em nenhum caminho!`, 'error');
+            document.getElementById('file-status').textContent = '❌ Não encontrado';
+            document.getElementById('file-status').style.color = '#ff1744';
+            return null;
+        }
+
+        // 3. Tentar carregar com Three.js
+        async function loadWithThreeJS(path) {
+            log(`🎨 Inicializando Three.js...`, 'info');
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(45, 800 / 500, 0.1, 10000);
+            camera.position.z = 15;
+
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(800, 500);
+            document.getElementById('canvas-container').innerHTML = '';
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            // Iluminação
+            const light = new THREE.DirectionalLight(0xffffff, 2);
+            light.position.set(10, 5, 7);
+            scene.add(light);
+
+            const ambientLight = new THREE.AmbientLight(0x404040, 1);
+            scene.add(ambientLight);
+
+            log(`📥 Iniciando carregamento do GLB com Three.js...`, 'info');
+
+            const loader = new GLTFLoader();
+
+            loader.load(
+                path,
+                (gltf) => {
+                    log(`✅ Modelo GLB carregado com sucesso!`, 'success');
+                    log(`🎯 Objetos no modelo: ${gltf.scene.children.length}`, 'success');
+
+                    const earth = gltf.scene;
+                    earth.scale.set(5, 5, 5);
+                    scene.add(earth);
+
+                    // Animação
+                    function animate() {
+                        requestAnimationFrame(animate);
+                        earth.rotation.y += 0.005;
+                        renderer.render(scene, camera);
+                    }
+                    animate();
+
+                    log(`🎉 Renderização iniciada!`, 'success');
+                },
+                (xhr) => {
+                    if (xhr.total > 0) {
+                        const percent = (xhr.loaded / xhr.total) * 100;
+                        log(`⏳ Progresso: ${percent.toFixed(1)}%`, 'info');
+                    }
+                },
+                (error) => {
+                    log(`❌ ERRO ao carregar modelo:`, 'error');
+                    log(`❌ ${error.message || error}`, 'error');
+                    console.error('Erro detalhado:', error);
+
+                    // Fallback: criar esfera simples
+                    log(`🔄 Criando esfera de fallback...`, 'info');
+                    createFallbackSphere(scene, renderer, camera);
+                }
+            );
+        }
+
+        function createFallbackSphere(scene, renderer, camera) {
+            const geometry = new THREE.SphereGeometry(5, 64, 64);
+            const material = new THREE.MeshPhongMaterial({
+                color: 0x2068a3,
+                shininess: 10
+            });
+
+            const sphere = new THREE.Mesh(geometry, material);
+            scene.add(sphere);
+
+            function animate() {
+                requestAnimationFrame(animate);
+                sphere.rotation.y += 0.005;
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            log(`✅ Esfera de fallback criada!`, 'success');
+        }
+
+        // Executar diagnóstico
+        (async () => {
+            document.getElementById('server-status').textContent = '✅ Servidor funcionando';
+            document.getElementById('server-status').style.color = '#00e676';
+
+            const foundPath = await checkFileExists();
+
+            if (foundPath) {
+                await loadWithThreeJS(foundPath);
+            } else {
+                log(`⚠️ Executando sem modelo 3D (fallback será usado)`, 'info');
+
+                // Mesmo sem o arquivo, cria a visualização de fallback
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(45, 800 / 500, 0.1, 10000);
+                camera.position.z = 15;
+
+                const renderer = new THREE.WebGLRenderer({ antialias: true });
+                renderer.setSize(800, 500);
+                document.getElementById('canvas-container').innerHTML = '';
+                document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+                const light = new THREE.DirectionalLight(0xffffff, 2);
+                light.position.set(10, 5, 7);
+                scene.add(light);
+
+                const ambientLight = new THREE.AmbientLight(0x404040, 1);
+                scene.add(ambientLight);
+
+                createFallbackSphere(scene, renderer, camera);
+            }
+        })();
+    </script>
+</body>
+</html>

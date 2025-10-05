@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AstroShield - Simulação de Impacto de Asteroides</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0e27;
+            --bg-secondary: #1a1f3a;
+            --bg-panel: rgba(26, 31, 58, 0.95);
+            --text-primary: #e8eaf6;
+            --text-secondary: #b0b8d4;
+            --accent-primary: #00e5ff;
+            --accent-danger: #ff1744;
+            --accent-warning: #ffd600;
+            --accent-success: #00e676;
+            --border-color: rgba(0, 229, 255, 0.3);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, #1a1f3a 100%);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        #header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: var(--bg-panel);
+            border-bottom: 2px solid var(--accent-primary);
+            display: flex;
+            align-items: center;
+            padding: 0 30px;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        #header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-right: auto;
+        }
+
+        #header .subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-left: 15px;
+        }
+
+        #control-panel {
+            position: fixed;
+            left: 20px;
+            top: 80px;
+            width: 360px;
+            max-height: calc(100vh - 100px);
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            z-index: 50;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+        }
+
+        #results-panel {
+            position: fixed;
+            right: 20px;
+            top: 80px;
+            width: 380px;
+            max-height: calc(100vh - 100px);
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            z-index: 50;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+        }
+
+        .panel-section {
+            margin-bottom: 25px;
+        }
+
+        .panel-section h3 {
+            font-size: 16px;
+            color: var(--accent-primary);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .input-group input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: var(--bg-secondary);
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .input-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .input-group select {
+            width: 100%;
+            padding: 10px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .value-display {
+            display: inline-block;
+            float: right;
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--accent-primary), #0099cc);
+            border: none;
+            border-radius: 8px;
+            color: #0a0e27;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 229, 255, 0.4);
+        }
+
+        .result-card {
+            background: var(--bg-secondary);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--accent-primary);
+        }
+
+        .result-card h4 {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .result-card .value {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .result-card .unit {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-left: 5px;
+        }
+
+        .danger {
+            border-left-color: var(--accent-danger);
+        }
+
+        .warning {
+            border-left-color: var(--accent-warning);
+        }
+
+        .success {
+            border-left-color: var(--accent-success);
+        }
+
+        #instructions {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-panel);
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            font-size: 13px;
+            color: var(--text-secondary);
+            z-index: 50;
+        }
+
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 200;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--bg-secondary);
+            border-top: 4px solid var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-primary);
+            border-radius: 4px;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+            color: var(--accent-primary);
+            margin-left: 5px;
+        }
+
+        .tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1000;
+            border: 1px solid var(--border-color);
+        }
+
+        /* ========================================
+           ACESSIBILIDADE - MELHORIAS
+           ======================================== */
+
+        /* Screen reader only - oculta visualmente mas mantém acessível */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+        /* Focus indicators melhorados */
+        *:focus {
+            outline: 3px solid var(--accent-primary);
+            outline-offset: 2px;
+        }
+
+        button:focus,
+        select:focus,
+        input[type="range"]:focus {
+            outline: 3px solid var(--accent-primary);
+            outline-offset: 4px;
+        }
+
+        /* Tooltips nos result-cards */
+        .result-card {
+            position: relative;
+            cursor: help;
+            transition: all 0.3s ease;
+        }
+
+        .result-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 229, 255, 0.2);
+        }
+
+        .result-card:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            line-height: 1.5;
+            width: 280px;
+            white-space: normal;
+            z-index: 1000;
+            border: 2px solid var(--accent-primary);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            margin-bottom: 8px;
+        }
+
+        .result-card:hover::before {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 8px solid transparent;
+            border-top-color: var(--accent-primary);
+            z-index: 1001;
+            margin-bottom: -8px;
+        }
+
+        /* Indicadores de severidade */
+        .severity-indicator {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 8px;
+            opacity: 0.8;
+        }
+
+        .danger .severity-indicator {
+            background: var(--accent-danger);
+            color: white;
+        }
+
+        .warning .severity-indicator {
+            background: var(--accent-warning);
+            color: #0a0e27;
+        }
+
+        .success .severity-indicator {
+            background: var(--accent-success);
+            color: #0a0e27;
+        }
+
+        /* Modo de alto contraste */
+        @media (prefers-contrast: high) {
+            :root {
+                --bg-primary: #000000;
+                --bg-secondary: #1a1a1a;
+                --text-primary: #ffffff;
+                --text-secondary: #e0e0e0;
+                --border-color: rgba(0, 229, 255, 0.8);
+            }
+
+            .result-card {
+                border: 2px solid currentColor;
+            }
+        }
+
+        /* Respeitar preferência de movimento reduzido */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+
+            .loading-spinner {
+                animation: none;
+                border: 4px solid var(--accent-primary);
+            }
+        }
+
+        /* Melhor contraste para botões */
+        .btn-primary {
+            position: relative;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 8px;
+            padding: 2px;
+            background: linear-gradient(135deg, var(--accent-primary), #0099cc);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .btn-primary:hover::before {
+            opacity: 1;
+        }
+
+        /* Indicador de teclado ativo */
+        body.keyboard-nav *:focus {
+            outline: 4px solid var(--accent-primary);
+            outline-offset: 4px;
+        }
+
+        /* Skip to content link para navegação por teclado */
+        .skip-link {
+            position: absolute;
+            top: -100px;
+            left: 20px;
+            background: var(--accent-primary);
+            color: var(--bg-primary);
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 700;
+            z-index: 10000;
+            text-decoration: none;
+            transition: top 0.3s;
+        }
+
+        .skip-link:focus {
+            top: 20px;
+        }
+
+        /* Indicadores de estado para leitores de tela */
+        [aria-live] {
+            position: relative;
+        }
+
+        /* Tooltip responsivo */
+        @media (max-width: 768px) {
+            .result-card:hover::after {
+                width: 200px;
+                font-size: 11px;
+            }
+        }
+
+        /* Legenda de distâncias */
+        #distance-legend {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 20px;
+            z-index: 50;
+            backdrop-filter: blur(10px);
+            display: none;
+            font-size: 11px;
+            line-height: 1.8;
+        }
+
+        #distance-legend.active {
+            display: block;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Skip navigation para acessibilidade -->
+    <a href="#control-panel" class="skip-link">Pular para controles principais</a>
+
+    <div id="loading" class="loading" role="alert" aria-live="assertive">
+        <div class="loading-spinner"></div>
+        <p>Carregando modelo 3D da Terra...</p>
+    </div>
+
+    <header id="header" role="banner">
+        <h1>🛡️ AstroShield</h1>
+        <span class="subtitle">Simulação Interativa de Impacto de Asteroides | NASA Space Apps Challenge 2025</span>
+    </header>
+
+    <div id="canvas-container" role="img" aria-label="Visualização 3D interativa da Terra e asteroides"></div>
+
+    <!-- Região de anúncios para leitores de tela -->
+    <div id="aria-announcements" role="status" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+
+    <div id="control-panel" role="region" aria-label="Painel de controle de parâmetros do asteroide">
+        <div class="panel-section">
+            <h3>🔭 Parâmetros do Asteroide</h3>
+
+            <div class="input-group">
+                <label for="diameter">
+                    Diâmetro
+                    <span class="tooltip" data-tooltip="Tamanho do asteroide em metros">ℹ️</span>
+                    <span class="value-display" id="diameter-value">500 m</span>
+                </label>
+                <input type="range" id="diameter" min="10" max="10000" value="500" step="10"
+                       aria-label="Diâmetro do asteroide em metros" aria-valuemin="10" aria-valuemax="10000" aria-valuenow="500">
+            </div>
+
+            <div class="input-group">
+                <label for="density">
+                    Densidade
+                    <span class="tooltip" data-tooltip="Composição do asteroide">ℹ️</span>
+                    <span class="value-display" id="density-value">2500 kg/m³</span>
+                </label>
+                <select id="density" aria-label="Densidade e tipo de composição do asteroide">
+                    <option value="1500">Carbonáceo (1500 kg/m³)</option>
+                    <option value="2500" selected>Rochoso (2500 kg/m³)</option>
+                    <option value="5000">Metálico (5000 kg/m³)</option>
+                    <option value="8000">Ferro-Níquel (8000 kg/m³)</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label for="velocity">
+                    Velocidade de Impacto
+                    <span class="tooltip" data-tooltip="Velocidade relativa à Terra">ℹ️</span>
+                    <span class="value-display" id="velocity-value">28 km/s</span>
+                </label>
+                <input type="range" id="velocity" min="11" max="72" value="28" step="1"
+                       aria-label="Velocidade de impacto em quilômetros por segundo" aria-valuemin="11" aria-valuemax="72" aria-valuenow="28">
+            </div>
+
+            <div class="input-group">
+                <label for="angle">
+                    Ângulo de Entrada
+                    <span class="tooltip" data-tooltip="90° = vertical, 45° = médio, 10° = rasante">ℹ️</span>
+                    <span class="value-display" id="angle-value">45°</span>
+                </label>
+                <input type="range" id="angle" min="10" max="90" value="45" step="5"
+                       aria-label="Ângulo de entrada do asteroide em graus" aria-valuemin="10" aria-valuemax="90" aria-valuenow="45">
+            </div>
+        </div>
+
+        <div class="panel-section">
+            <h3>🌍 Local de Impacto</h3>
+
+            <div class="input-group">
+                <label for="location">Cidade (Pré-configuradas)</label>
+                <select id="location" aria-label="Selecione a localização do impacto">
+                    <option value="40.7128,-74.0060">Nova York, EUA</option>
+                    <option value="-23.5505,-46.6333">São Paulo, Brasil</option>
+                    <option value="51.5074,-0.1278">Londres, Reino Unido</option>
+                    <option value="35.6762,139.6503">Tóquio, Japão</option>
+                    <option value="-33.8688,151.2093">Sydney, Austrália</option>
+                    <option value="0,0">Oceano Atlântico (0°, 0°)</option>
+                </select>
+            </div>
+
+            <p style="font-size: 12px; color: var(--text-secondary); margin-top: 10px;">
+                💡 Clique no globo 3D para selecionar qualquer local!
+            </p>
+        </div>
+
+        <button class="btn-primary" id="simulate-btn" aria-label="Simular impacto do asteroide com parâmetros atuais">⚡ Simular Impacto</button>
+    </div>
+
+    <div id="results-panel" role="region" aria-label="Painel de resultados da simulação">
+        <div class="panel-section">
+            <h3>📊 Resultados da Simulação</h3>
+
+            <div class="result-card danger" role="article" aria-label="Resultado: Energia Liberada"
+                 data-tooltip="Quantidade total de energia cinética convertida em explosão, medida em megatons de TNT equivalente">
+                <h4>Energia Liberada <span class="severity-indicator">[CRÍTICO]</span></h4>
+                <div class="value" id="energy-value" aria-live="polite">0</div>
+                <span class="unit">Megatons TNT</span>
+            </div>
+
+            <div class="result-card danger" role="article" aria-label="Resultado: Diâmetro da Cratera"
+                 data-tooltip="Tamanho estimado da cratera de impacto formada pelo asteroide, calculado usando fórmulas científicas baseadas em energia e ângulo de entrada">
+                <h4>Diâmetro da Cratera <span class="severity-indicator">[CRÍTICO]</span></h4>
+                <div class="value" id="crater-value" aria-live="polite">0</div>
+                <span class="unit">km</span>
+            </div>
+
+            <div class="result-card warning" role="article" aria-label="Resultado: Magnitude Sísmica"
+                 data-tooltip="Intensidade do terremoto gerado pelo impacto na escala Richter. Magnitudes acima de 7.0 são consideradas catastróficas">
+                <h4>Magnitude Sísmica <span class="severity-indicator">[ALTO]</span></h4>
+                <div class="value" id="seismic-value" aria-live="polite">0</div>
+                <span class="unit">Richter</span>
+            </div>
+
+            <div class="result-card warning" role="article" aria-label="Resultado: Raio de Devastação"
+                 data-tooltip="Distância do ponto de impacto onde a onda de choque causa destruição massiva de estruturas (20 PSI de sobrepressão)">
+                <h4>Raio de Devastação <span class="severity-indicator">[ALTO]</span></h4>
+                <div class="value" id="blast-value" aria-live="polite">0</div>
+                <span class="unit">km</span>
+            </div>
+
+            <div class="result-card danger" role="article" aria-label="Resultado: Raio Térmico"
+                 data-tooltip="Área onde a radiação térmica do impacto causa queimaduras de terceiro grau em pessoas expostas">
+                <h4>Raio Térmico <span class="severity-indicator">[CRÍTICO]</span></h4>
+                <div class="value" id="thermal-value" aria-live="polite">0</div>
+                <span class="unit">km (queimaduras 3º grau)</span>
+            </div>
+
+            <div class="result-card success" role="article" aria-label="Resultado: Comparação"
+                 data-tooltip="Comparação da energia do impacto com eventos conhecidos para melhor compreensão da escala">
+                <h4>Comparação <span class="severity-indicator">[INFO]</span></h4>
+                <div class="value" id="comparison-value" aria-live="polite">-</div>
+                <span class="unit">× Bomba de Hiroshima</span>
+            </div>
+        </div>
+
+        <div class="panel-section">
+            <h3>💡 Curiosidade Científica</h3>
+            <p style="font-size: 13px; line-height: 1.6; color: var(--text-secondary);">
+                <strong>Você sabia?</strong> O asteroide que extinguiu os dinossauros há 66 milhões de anos
+                tinha cerca de 10-15 km de diâmetro e liberou energia equivalente a 10 bilhões de bombas de Hiroshima!
+            </p>
+        </div>
+    </div>
+
+    <div id="instructions">
+        🖱️ Controles: Arraste para rotacionar | Scroll para zoom | Clique no globo para selecionar local de impacto
+    </div>
+
+    <!-- Legenda de distâncias (aparece no modo real) -->
+    <div id="distance-legend" role="complementary" aria-label="Legenda de cores por distância">
+        <div style="font-weight: 600; margin-bottom: 8px; color: var(--accent-primary);">📏 Legenda de Distâncias</div>
+        <div class="legend-item">
+            <span class="legend-color" style="background: #ff1744;"></span>
+            <span>🔴 < 1 LD (< 384 mil km) - Muito Próximo</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color" style="background: #ff9933;"></span>
+            <span>🟠 1-5 LD (384k - 1.9M km) - Próximo</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color" style="background: #ffd600;"></span>
+            <span>🟡 5-20 LD (1.9M - 7.7M km) - Moderado</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color" style="background: #00e676;"></span>
+            <span>🟢 > 20 LD (> 7.7M km) - Distante</span>
+        </div>
+        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border-color); font-size: 10px; color: var(--text-secondary);">
+            LD = Distância Lunar (384.400 km) | 🌙 Linha branca = Órbita da Lua
+        </div>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "./three.js/build/three.module.js",
+                "three/addons/": "./three.js/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module" src="./app.js"></script>
+</body>
+</html>

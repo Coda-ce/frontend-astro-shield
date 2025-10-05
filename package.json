@@ -1,0 +1,23 @@
+{
+  "name": "astroshield",
+  "version": "0.1.0",
+  "description": "Plataforma Interativa de Simulação de Impacto de Asteroides - NASA Space Apps Challenge 2025",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "dev": "python3 -m http.server 8080",
+    "start": "python3 -m http.server 8080"
+  },
+  "keywords": [
+    "nasa",
+    "space-apps",
+    "asteroid",
+    "impact-simulation",
+    "threejs",
+    "planetary-defense"
+  ],
+  "author": "AstroShield Team",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {}
+}
