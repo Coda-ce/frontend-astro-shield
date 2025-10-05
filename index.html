@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,13 +8,11 @@
 
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-          crossorigin=""/>
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-            crossorigin=""></script>
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
     <style>
         * {
@@ -284,8 +283,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         ::-webkit-scrollbar {
@@ -442,6 +446,7 @@
 
         /* Respeitar preferência de movimento reduzido */
         @media (prefers-reduced-motion: reduce) {
+
             *,
             *::before,
             *::after {
@@ -683,8 +688,341 @@
             background: var(--accent-primary);
             color: var(--bg-primary);
         }
+
+        /* ========================================
+           DETAILED IMPACT REPORT MODAL
+           ======================================== */
+        .report-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .report-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .report-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(5px);
+        }
+
+        .report-container {
+            position: relative;
+            width: 90%;
+            max-width: 1200px;
+            max-height: 90vh;
+            background: var(--bg-primary);
+            border: 2px solid var(--accent-primary);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 229, 255, 0.3);
+            animation: slideUp 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .report-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 30px;
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary));
+            border-bottom: 2px solid var(--accent-primary);
+        }
+
+        .report-header h2 {
+            font-size: 24px;
+            color: var(--accent-primary);
+            margin: 0;
+        }
+
+        .report-close {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            color: var(--text-primary);
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .report-close:hover {
+            background: var(--accent-danger);
+            border-color: var(--accent-danger);
+            transform: rotate(90deg);
+        }
+
+        .report-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 20px 30px;
+            background: rgba(0, 229, 255, 0.05);
+        }
+
+        .summary-card {
+            background: var(--bg-secondary);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-primary);
+            text-align: center;
+        }
+
+        .summary-card .label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .summary-card .value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .report-content {
+            max-height: calc(90vh - 300px);
+            overflow-y: auto;
+            padding: 20px 30px;
+        }
+
+        .report-section {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            cursor: pointer;
+            user-select: none;
+            background: var(--bg-secondary);
+            transition: all 0.3s;
+        }
+
+        .section-header:hover {
+            background: rgba(0, 229, 255, 0.1);
+        }
+
+        .section-header .icon {
+            font-size: 24px;
+            margin-right: 12px;
+        }
+
+        .section-header h3 {
+            flex: 1;
+            margin: 0;
+            font-size: 16px;
+            color: var(--text-primary);
+        }
+
+        .casualty-badge {
+            background: var(--accent-danger);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-right: 10px;
+        }
+
+        .toggle-icon {
+            font-size: 12px;
+            color: var(--text-secondary);
+            transition: transform 0.3s;
+        }
+
+        .report-section.expanded .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .section-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+
+        .report-section.expanded .section-content {
+            max-height: 1000px;
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .metric-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .metric-row:hover {
+            background: rgba(0, 229, 255, 0.05);
+            transform: translateX(4px);
+        }
+
+        .metric-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .severity-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .severity-dot.critical {
+            background: var(--accent-danger);
+        }
+
+        .severity-dot.high {
+            background: #FF6347;
+        }
+
+        .severity-dot.medium {
+            background: var(--accent-warning);
+        }
+
+        .severity-dot.info {
+            background: var(--accent-primary);
+        }
+
+        .metric-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-align: right;
+        }
+
+        .metric-detail {
+            grid-column: 1 / -1;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: -4px;
+            padding-left: 16px;
+        }
+
+        .comparison-box {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(0, 229, 255, 0.1);
+            border-left: 3px solid var(--accent-primary);
+            border-radius: 6px;
+        }
+
+        .comparison-box strong {
+            color: var(--accent-primary);
+        }
+
+        .comparison-box p {
+            margin: 8px 0 0 0;
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        .report-actions {
+            display: flex;
+            gap: 10px;
+            padding: 20px 30px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .report-actions button {
+            flex: 1;
+        }
+
+        /* Scrollbar customizada */
+        .report-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .report-content::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+            border-radius: 4px;
+        }
+
+        .report-content::-webkit-scrollbar-thumb {
+            background: var(--accent-primary);
+            border-radius: 4px;
+        }
+
+        .report-content::-webkit-scrollbar-thumb:hover {
+            background: #00b8cc;
+        }
+
+        /* Animação de contador */
+        @keyframes countUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .metric-value.animating {
+            animation: countUp 0.5s ease;
+        }
     </style>
 </head>
+
 <body>
     <!-- Skip navigation para acessibilidade -->
     <a href="#control-panel" class="skip-link">Pular para controles principais</a>
@@ -701,7 +1039,8 @@
 
     <!-- View Toggle Button -->
     <div id="view-toggle" role="tablist" aria-label="Alternar entre visualização 3D e 2D">
-        <button class="view-toggle-btn active" data-view="3d" role="tab" aria-selected="true" aria-controls="canvas-container">
+        <button class="view-toggle-btn active" data-view="3d" role="tab" aria-selected="true"
+            aria-controls="canvas-container">
             🌍 Globo 3D
         </button>
         <button class="view-toggle-btn" data-view="2d" role="tab" aria-selected="false" aria-controls="map-container">
@@ -726,7 +1065,8 @@
                     <span class="value-display" id="diameter-value">500 m</span>
                 </label>
                 <input type="range" id="diameter" min="10" max="10000" value="500" step="10"
-                       aria-label="Diâmetro do asteroide em metros" aria-valuemin="10" aria-valuemax="10000" aria-valuenow="500">
+                    aria-label="Diâmetro do asteroide em metros" aria-valuemin="10" aria-valuemax="10000"
+                    aria-valuenow="500">
             </div>
 
             <div class="input-group">
@@ -750,7 +1090,8 @@
                     <span class="value-display" id="velocity-value">28 km/s</span>
                 </label>
                 <input type="range" id="velocity" min="11" max="72" value="28" step="1"
-                       aria-label="Velocidade de impacto em quilômetros por segundo" aria-valuemin="11" aria-valuemax="72" aria-valuenow="28">
+                    aria-label="Velocidade de impacto em quilômetros por segundo" aria-valuemin="11" aria-valuemax="72"
+                    aria-valuenow="28">
             </div>
 
             <div class="input-group">
@@ -760,7 +1101,8 @@
                     <span class="value-display" id="angle-value">45°</span>
                 </label>
                 <input type="range" id="angle" min="10" max="90" value="45" step="5"
-                       aria-label="Ângulo de entrada do asteroide em graus" aria-valuemin="10" aria-valuemax="90" aria-valuenow="45">
+                    aria-label="Ângulo de entrada do asteroide em graus" aria-valuemin="10" aria-valuemax="90"
+                    aria-valuenow="45">
             </div>
         </div>
 
@@ -784,7 +1126,8 @@
             </p>
         </div>
 
-        <button class="btn-primary" id="simulate-btn" aria-label="Simular impacto do asteroide com parâmetros atuais">⚡ Simular Impacto</button>
+        <button class="btn-primary" id="simulate-btn" aria-label="Simular impacto do asteroide com parâmetros atuais">⚡
+            Simular Impacto</button>
     </div>
 
     <div id="results-panel" role="region" aria-label="Painel de resultados da simulação">
@@ -792,49 +1135,53 @@
             <h3>📊 Resultados da Simulação</h3>
 
             <div class="result-card danger" role="article" aria-label="Resultado: Energia Liberada"
-                 data-tooltip="Quantidade total de energia cinética convertida em explosão, medida em megatons de TNT equivalente">
+                data-tooltip="Quantidade total de energia cinética convertida em explosão, medida em megatons de TNT equivalente">
                 <h4>Energia Liberada <span class="severity-indicator">[CRÍTICO]</span></h4>
                 <div class="value" id="energy-value" aria-live="polite">0</div>
                 <span class="unit">Megatons TNT</span>
             </div>
 
             <div class="result-card danger" role="article" aria-label="Resultado: Diâmetro da Cratera"
-                 data-tooltip="Tamanho estimado da cratera de impacto formada pelo asteroide, calculado usando fórmulas científicas baseadas em energia e ângulo de entrada">
+                data-tooltip="Tamanho estimado da cratera de impacto formada pelo asteroide, calculado usando fórmulas científicas baseadas em energia e ângulo de entrada">
                 <h4>Diâmetro da Cratera <span class="severity-indicator">[CRÍTICO]</span></h4>
                 <div class="value" id="crater-value" aria-live="polite">0</div>
                 <span class="unit">km</span>
             </div>
 
             <div class="result-card warning" role="article" aria-label="Resultado: Magnitude Sísmica"
-                 data-tooltip="Intensidade do terremoto gerado pelo impacto na escala Richter. Magnitudes acima de 7.0 são consideradas catastróficas">
+                data-tooltip="Intensidade do terremoto gerado pelo impacto na escala Richter. Magnitudes acima de 7.0 são consideradas catastróficas">
                 <h4>Magnitude Sísmica <span class="severity-indicator">[ALTO]</span></h4>
                 <div class="value" id="seismic-value" aria-live="polite">0</div>
                 <span class="unit">Richter</span>
             </div>
 
             <div class="result-card warning" role="article" aria-label="Resultado: Raio de Devastação"
-                 data-tooltip="Distância do ponto de impacto onde a onda de choque causa destruição massiva de estruturas (20 PSI de sobrepressão)">
+                data-tooltip="Distância do ponto de impacto onde a onda de choque causa destruição massiva de estruturas (20 PSI de sobrepressão)">
                 <h4>Raio de Devastação <span class="severity-indicator">[ALTO]</span></h4>
                 <div class="value" id="blast-value" aria-live="polite">0</div>
                 <span class="unit">km</span>
             </div>
 
             <div class="result-card danger" role="article" aria-label="Resultado: Raio Térmico"
-                 data-tooltip="Área onde a radiação térmica do impacto causa queimaduras de terceiro grau em pessoas expostas">
+                data-tooltip="Área onde a radiação térmica do impacto causa queimaduras de terceiro grau em pessoas expostas">
                 <h4>Raio Térmico <span class="severity-indicator">[CRÍTICO]</span></h4>
                 <div class="value" id="thermal-value" aria-live="polite">0</div>
                 <span class="unit">km (queimaduras 3º grau)</span>
             </div>
 
             <div class="result-card success" role="article" aria-label="Resultado: Comparação"
-                 data-tooltip="Comparação da energia do impacto com eventos conhecidos para melhor compreensão da escala">
+                data-tooltip="Comparação da energia do impacto com eventos conhecidos para melhor compreensão da escala">
                 <h4>Comparação <span class="severity-indicator">[INFO]</span></h4>
                 <div class="value" id="comparison-value" aria-live="polite">-</div>
                 <span class="unit">× Bomba de Hiroshima</span>
             </div>
         </div>
 
-        <div class="panel-section">
+        <button id="detailed-report-btn" class="btn-secondary" style="width: 100%; margin-top: 15px;">
+            📋 Ver Relatório Detalhado
+        </button>
+
+        <div class="panel-section" style="width: 100%; margin-top: 25px;">
             <h3>💡 Curiosidade Científica</h3>
             <p style="font-size: 13px; line-height: 1.6; color: var(--text-secondary);">
                 <strong>Você sabia?</strong> O asteroide que extinguiu os dinossauros há 66 milhões de anos
@@ -847,6 +1194,34 @@
 
     <div id="instructions">
         🖱️ Controles: Arraste para rotacionar | Scroll para zoom | Clique no globo para selecionar local de impacto
+    </div>
+
+    <!-- Detailed Impact Report Modal -->
+    <div id="impact-report-modal" class="report-modal" role="dialog" aria-labelledby="report-title" aria-hidden="true">
+        <div class="report-overlay" onclick="document.getElementById('impact-report-modal').classList.remove('active')">
+        </div>
+        <div class="report-container">
+            <div class="report-header">
+                <h2 id="report-title">📊 Relatório Detalhado de Impacto</h2>
+                <button class="report-close" aria-label="Fechar relatório"
+                    onclick="document.getElementById('impact-report-modal').classList.remove('active')">✕</button>
+            </div>
+
+            <div class="report-summary" id="report-summary">
+                <!-- Summary will be injected here -->
+            </div>
+
+            <div class="report-content" id="report-content">
+                <!-- Sections will be injected here -->
+            </div>
+
+            <div class="report-actions">
+                <button class="btn-secondary" id="export-pdf-btn">📄 Exportar PDF</button>
+                <button class="btn-secondary" id="share-report-btn">🔗 Compartilhar</button>
+                <button class="btn-primary"
+                    onclick="document.getElementById('impact-report-modal').classList.remove('active')">Fechar</button>
+            </div>
+        </div>
     </div>
 
     <!-- Legenda de distâncias (aparece no modo real) -->
@@ -868,7 +1243,8 @@
             <span class="legend-color" style="background: #00e676;"></span>
             <span>🟢 > 20 LD (> 7.7M km) - Distante</span>
         </div>
-        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border-color); font-size: 10px; color: var(--text-secondary);">
+        <div
+            style="margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border-color); font-size: 10px; color: var(--text-secondary);">
             LD = Distância Lunar (384.400 km) | 🌙 Linha branca = Órbita da Lua
         </div>
     </div>
@@ -884,4 +1260,5 @@
 
     <script type="module" src="./app.js"></script>
 </body>
+
 </html>

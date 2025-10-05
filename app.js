@@ -3,6 +3,8 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { AsteroidOrbitalViewer } from './asteroid-orbital-view.js';
 import { MapView } from './map-view.js';
+import { PopulationEstimator } from './population-estimator.js';
+import { ImpactReport } from './impact-report.js';
 
 // ==========================================
 // CONFIGURAÇÃO DA CENA 3D
@@ -917,7 +919,136 @@ class ImpactCalculator {
             return `${tsarBombaRatio.toFixed(1)}× Tsar Bomba`;
         }
     }
+
+    /**
+     * Calcula profundidade da cratera
+     */
+    static calculateCraterDepth(diameterKm) {
+        // Relação profundidade/diâmetro típica: 1:5 para crateras de impacto
+        return (diameterKm * 1000) / 5; // Retorna em metros
+    }
+
+    /**
+     * Calcula diâmetro da bola de fogo
+     */
+    static calculateFireballDiameter(energyMegatons) {
+        // Baseado em explosões nucleares
+        return 1.9 * Math.pow(energyMegatons, 0.4); // km
+    }
+
+    /**
+     * Calcula intensidade da onda de choque em decibéis
+     */
+    static calculateShockwaveDecibels(energyMegatons) {
+        // Fórmula aproximada baseada em energia
+        const pressure = 20 * Math.pow(energyMegatons, 0.33); // PSI
+        const decibels = 194 + 20 * Math.log10(pressure);
+        return Math.min(decibels, 280); // Limite físico
+    }
+
+    /**
+     * Calcula velocidade do vento de explosão
+     */
+    static calculateWindSpeed(energyMegatons) {
+        // Velocidade em km/s no pico
+        return 0.35 * Math.pow(energyMegatons, 0.25);
+    }
+
+    /**
+     * Calcula frequência de eventos similares
+     */
+    static calculateFrequency(energyMegatons) {
+        // Baseado em estatísticas de impactos NEO
+        if (energyMegatons < 1) {
+            return "Anualmente";
+        } else if (energyMegatons < 10) {
+            return `A cada ${Math.round(energyMegatons * 10)} anos`;
+        } else if (energyMegatons < 100) {
+            return `A cada ${Math.round(energyMegatons * 100)} anos`;
+        } else if (energyMegatons < 1000) {
+            return `A cada ${Math.round(energyMegatons * 1000)} anos`;
+        } else if (energyMegatons < 10000) {
+            const years = Math.round(energyMegatons * 10000);
+            return `A cada ${(years / 1000).toFixed(0)} mil anos`;
+        } else {
+            const years = Math.round(energyMegatons * 100000);
+            return `A cada ${(years / 1000000).toFixed(1)} milhões de anos`;
+        }
+    }
+
+    /**
+     * Raio onde roupas pegam fogo
+     */
+    static calculateClothesIgnitionRadius(energyMegatons) {
+        // Cal/cm² necessários: ~5 cal/cm²
+        return 2.8 * Math.pow(energyMegatons, 0.41);
+    }
+
+    /**
+     * Raio onde árvores pegam fogo
+     */
+    static calculateTreeIgnitionRadius(energyMegatons) {
+        // Cal/cm² necessários: ~8 cal/cm²
+        return 3.2 * Math.pow(energyMegatons, 0.41);
+    }
+
+    /**
+     * Raio de dano pulmonar
+     */
+    static calculateLungDamageRadius(energyMegatons) {
+        // 20 PSI overpressure
+        return 1.5 * Math.pow(energyMegatons, 0.33);
+    }
+
+    /**
+     * Raio de ruptura de tímpanos
+     */
+    static calculateEardrumRuptureRadius(energyMegatons) {
+        // 5 PSI overpressure
+        return 2.5 * Math.pow(energyMegatons, 0.33);
+    }
+
+    /**
+     * Raio de colapso de edifícios
+     */
+    static calculateBuildingCollapseRadius(energyMegatons) {
+        // 10 PSI overpressure
+        return 2.8 * Math.pow(energyMegatons, 0.33);
+    }
+
+    /**
+     * Raio de colapso de casas
+     */
+    static calculateHomeCollapseRadius(energyMegatons) {
+        // 5 PSI overpressure
+        return 3.5 * Math.pow(energyMegatons, 0.33);
+    }
+
+    /**
+     * Raio de árvores derrubadas
+     */
+    static calculateTreeFallRadius(energyMegatons) {
+        // 2 PSI overpressure
+        return 4.2 * Math.pow(energyMegatons, 0.33);
+    }
+
+    /**
+     * Raio de queimaduras de 2º grau
+     */
+    static calculate2ndDegreeBurnsRadius(energyMegatons) {
+        // ~3 cal/cm²
+        return 4.5 * Math.pow(energyMegatons, 0.41);
+    }
+
+    /**
+     * Raio de percepção do terremoto
+     */
+    static calculateEarthquakePerceptionRadius(magnitude) {
+        // Baseado em magnitude Richter
+        return Math.pow(10, magnitude - 2); // km
+    }
 }
+
 
 // ==========================================
 // CONTROLE DA UI
@@ -1035,6 +1166,76 @@ class UIController {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 this.runSimulation();
+            }
+        });
+
+        // Botão de relatório detalhado
+        const detailedReportBtn = document.getElementById('detailed-report-btn');
+        if (detailedReportBtn) {
+            detailedReportBtn.addEventListener('click', () => {
+                this.renderDetailedReport();
+            });
+        }
+
+        // Modal: fechar com overlay ou botão X
+        const modal = document.getElementById('impact-report-modal');
+        const closeModalBtn = modal?.querySelector('.report-close');
+        const overlay = modal?.querySelector('.report-overlay');
+
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', () => {
+                modal.classList.remove('active');
+                this.announce('Relatório fechado');
+            });
+        }
+
+        if (overlay) {
+            overlay.addEventListener('click', () => {
+                modal.classList.remove('active');
+                this.announce('Relatório fechado');
+            });
+        }
+
+        // Botões de ação do relatório
+        const closeReportButtons = document.querySelectorAll('.report-actions button');
+        closeReportButtons.forEach(btn => {
+            if (btn.textContent.includes('Fechar')) {
+                btn.addEventListener('click', () => {
+                    modal.classList.remove('active');
+                });
+            }
+        });
+
+        // Exportar PDF (placeholder)
+        const exportPdfBtn = document.getElementById('export-pdf-btn');
+        if (exportPdfBtn) {
+            exportPdfBtn.addEventListener('click', () => {
+                alert('Funcionalidade de exportação PDF em desenvolvimento!');
+                console.log('📄 Exportar PDF solicitado');
+            });
+        }
+
+        // Compartilhar (placeholder)
+        const shareBtn = document.getElementById('share-report-btn');
+        if (shareBtn) {
+            shareBtn.addEventListener('click', () => {
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'AstroShield - Relatório de Impacto',
+                        text: 'Veja este relatório de simulação de impacto asteroidal',
+                        url: window.location.href
+                    });
+                } else {
+                    alert('Compartilhamento não disponível neste navegador');
+                }
+            });
+        }
+
+        // ESC para fechar modal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal?.classList.contains('active')) {
+                modal.classList.remove('active');
+                this.announce('Relatório fechado');
             }
         });
     }
@@ -1213,6 +1414,137 @@ class UIController {
         }
     }
 
+    /**
+     * Renderiza o relatório detalhado de impacto
+     */
+    async renderDetailedReport() {
+        console.log('🔍 Iniciando renderização do relatório...');
+        console.log('📊 Dados do impacto:', this.lastImpactData);
+
+        if (!this.lastImpactData) {
+            alert('Execute uma simulação primeiro para gerar o relatório!');
+            return;
+        }
+
+        try {
+            console.log('✅ Dados encontrados, gerando relatório...');
+            // Gerar relatório
+            const reportGenerator = new ImpactReport(this.lastImpactData, ImpactCalculator);
+            const report = await reportGenerator.generate();
+            console.log('📄 Relatório gerado:', report);
+
+            // Renderizar sumário
+            const summaryEl = document.getElementById('report-summary');
+            summaryEl.innerHTML = `
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="summary-label">Total de Mortes Estimadas</span>
+                        <span class="summary-value critical">${report.summary.totalDeaths.toLocaleString('pt-BR')}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Total de Feridos</span>
+                        <span class="summary-value high">${report.summary.totalInjured.toLocaleString('pt-BR')}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Área Afetada</span>
+                        <span class="summary-value medium">${report.summary.totalArea.toLocaleString('pt-BR')} km²</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Magnitude do Evento</span>
+                        <span class="summary-value info">${report.summary.eventScale}</span>
+                    </div>
+                </div>
+            `;
+
+            // Renderizar seções
+            const contentEl = document.getElementById('report-content');
+            contentEl.innerHTML = `
+                ${this.renderReportSection('crater', '🕳️ Cratera de Impacto', report.crater)}
+                ${this.renderReportSection('fireball', '🔥 Bola de Fogo', report.fireball)}
+                ${this.renderReportSection('shockwave', '💥 Onda de Choque', report.shockwave)}
+                ${this.renderReportSection('windblast', '💨 Rajada de Vento', report.windblast)}
+                ${this.renderReportSection('earthquake', '🌍 Efeito Sísmico', report.earthquake)}
+                ${this.renderReportSection('frequency', '📊 Frequência do Evento', report.frequency)}
+            `;
+
+            // Mostrar modal
+            const modal = document.getElementById('impact-report-modal');
+            modal.classList.add('active');
+
+            // Adicionar event listeners para expandir seções
+            document.querySelectorAll('.report-section').forEach(section => {
+                const header = section.querySelector('.section-header');
+                header.addEventListener('click', () => {
+                    section.classList.toggle('expanded');
+                });
+            });
+
+            this.announce('Relatório detalhado de impacto aberto');
+            console.log('📊 Relatório detalhado gerado:', report);
+        } catch (error) {
+            console.error('❌ Erro ao gerar relatório:', error);
+            alert('Erro ao gerar relatório. Veja o console para detalhes.');
+        }
+    }
+
+    /**
+     * Renderiza uma seção do relatório
+     */
+    renderReportSection(id, title, data) {
+        return `
+            <div class="report-section" id="section-${id}">
+                <div class="section-header">
+                    <div class="section-title">
+                        <span class="severity-dot ${data.severity}"></span>
+                        <h3>${title}</h3>
+                    </div>
+                    <span class="expand-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    ${this.renderMetrics(data.metrics)}
+                    ${data.comparison ? `
+                        <div class="comparison-box">
+                            <h4>📏 Comparação</h4>
+                            <p>${data.comparison}</p>
+                        </div>
+                    ` : ''}
+                    ${data.casualties ? `
+                        <div class="casualties-box">
+                            <h4>👥 Estimativa de Vítimas</h4>
+                            <div class="casualties-grid">
+                                <div class="casualty-item">
+                                    <span class="casualty-label">Mortes</span>
+                                    <span class="casualty-value deaths">${data.casualties.deaths.toLocaleString('pt-BR')}</span>
+                                </div>
+                                <div class="casualty-item">
+                                    <span class="casualty-label">Feridos</span>
+                                    <span class="casualty-value injured">${data.casualties.injured.toLocaleString('pt-BR')}</span>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+                    ${data.description ? `
+                        <div class="description-box">
+                            <p>${data.description}</p>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Renderiza métricas de uma seção
+     */
+    renderMetrics(metrics) {
+        return metrics.map(metric => `
+            <div class="metric-row">
+                <span class="metric-label">${metric.label}</span>
+                <span class="metric-value">${metric.value}</span>
+            </div>
+        `).join('');
+    }
+
     runSimulation() {
         // Coleta parâmetros
         const diameterM = parseFloat(document.getElementById('diameter').value);
@@ -1232,13 +1564,33 @@ class UIController {
         const thermalRadius = ImpactCalculator.calculateThermalRadius(energyMT);
         const comparison = ImpactCalculator.getEnergyComparison(energyMT);
 
-        // Salvar resultados para uso no mapa 2D
+        // Salvar resultados completos para uso no mapa 2D E relatório detalhado
         this.viewer.lastSimulationResults = {
             energy: energyMT,
             crater: craterDiameter,
             seismic: seismicMag,
             blast: blastRadius,
             thermal: thermalRadius
+        };
+
+        // Salvar dados completos do impacto para o relatório detalhado
+        this.lastImpactData = {
+            asteroid: {
+                diameter: diameterM,
+                density: densityKgM3,
+                velocity: velocityKmS,
+                angle: angleDegs,
+                mass: mass
+            },
+            location: this.viewer.selectedLocation,
+            energy: kineticEnergy,
+            energyMT: energyMT,
+            results: {
+                craterDiameter: craterDiameter,
+                seismicMagnitude: seismicMag,
+                blastRadius: blastRadius,
+                thermalRadius: thermalRadius
+            }
         };
 
         // Atualiza UI
