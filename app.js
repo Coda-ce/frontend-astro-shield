@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { AsteroidOrbitalViewer } from './asteroid-orbital-view.js';
+import { MapView } from './map-view.js';
 
 // ==========================================
 // CONFIGURAÇÃO DA CENA 3D
@@ -45,6 +46,11 @@ class AstroShieldViewer {
         this.impactMarker = null;
         this.impactZone = null;
         this.selectedLocation = { lat: 40.7128, lon: -74.0060 }; // NYC default
+
+        // View management
+        this.currentView = '3d'; // '3d' or '2d'
+        this.mapView = new MapView('map-container');
+        this.lastSimulationResults = null;
 
         this.setupLights();
         this.setupStars();
@@ -483,55 +489,219 @@ class AstroShieldViewer {
         }
 
         statsPanel.innerHTML = `
-            <h3 style="color: var(--accent-primary); margin: 0 0 10px 0; font-size: 14px;">
-                🛰️ Asteroides Próximos
+            <h3 style="color: var(--accent-primary); margin: 0 0 10px 0; font-size: 13px;">
+                🎛️ Menu de Navegação
             </h3>
-            <div style="color: var(--text-secondary); line-height: 1.8;">
-                <div>📊 Total exibido: <strong style="color: var(--text-primary);">${stats.displayed}</strong></div>
-                <div>⚠️ Perigosos: <strong style="color: var(--accent-danger);">${stats.hazardous || 0}</strong></div>
-                <div>✅ Seguros: <strong style="color: var(--accent-success);">${(stats.displayed - (stats.hazardous || 0))}</strong></div>
-                ${stats.error ? `<div style="color: var(--accent-warning); margin-top: 8px; font-size: 11px;">⚠️ ${stats.error}</div>` : ''}
-            </div>
-            <div style="margin-top: 12px; padding: 10px; background: rgba(0, 229, 255, 0.1); border-radius: 6px; border: 1px solid rgba(0, 229, 255, 0.3);">
-                <label style="display: flex; align-items: center; cursor: pointer; font-size: 12px;">
-                    <input type="checkbox" id="real-distance-toggle" style="margin-right: 8px; cursor: pointer;">
-                    <span>📏 Distância Real (escala científica)</span>
-                </label>
-                <div id="distance-mode-info" style="font-size: 10px; color: var(--text-secondary); margin-top: 6px; line-height: 1.4;">
-                    🎨 Modo: Visualização (cores por periculosidade)
-                </div>
-            </div>
-            <button id="toggle-orbits-btn" style="
-                margin-top: 12px;
+
+            <button id="toggle-orbits-btn"
+                    role="button"
+                    aria-label="Alternar visualização de órbitas dos asteroides"
+                    tabindex="0"
+                    style="
+                margin-bottom: 6px;
                 width: 100%;
                 padding: 8px;
-                background: var(--accent-primary);
-                border: none;
+                background: var(--bg-secondary);
+                border: 1px solid var(--border-color);
                 border-radius: 6px;
-                color: #0a0e27;
+                color: var(--text-primary);
                 font-weight: 600;
                 cursor: pointer;
-                font-size: 12px;
+                font-size: 11px;
+                transition: all 0.3s;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
             ">
-                🌐 Alternar Órbitas
+                <span aria-hidden="true">🌐</span> Alternar Órbitas
             </button>
-            <a href="asteroids.html" style="
-                display: block;
-                margin-top: 8px;
+
+            <button id="distance-toggle-btn"
+                    role="switch"
+                    aria-label="Alternar modo de distância real com escala científica"
+                    aria-checked="false"
+                    tabindex="0"
+                    style="
+                margin-bottom: 6px;
                 width: 100%;
-                padding: 10px;
-                background: linear-gradient(135deg, var(--accent-primary), #0099cc);
-                border: none;
+                padding: 8px;
+                background: var(--bg-secondary);
+                border: 1px solid var(--border-color);
                 border-radius: 6px;
-                color: #0a0e27;
-                font-weight: 700;
+                color: var(--text-primary);
+                font-weight: 600;
+                cursor: pointer;
+                font-size: 11px;
+                transition: all 0.3s;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+            ">
+                <span class="toggle-indicator" aria-hidden="true" style="
+                    width: 36px;
+                    height: 20px;
+                    background: var(--bg-primary);
+                    border-radius: 10px;
+                    position: relative;
+                    flex-shrink: 0;
+                    border: 1px solid var(--border-color);
+                    display: block;
+                ">
+                    <span class="toggle-knob" style="
+                        position: absolute;
+                        width: 16px;
+                        height: 16px;
+                        background: var(--text-secondary);
+                        border-radius: 50%;
+                        top: 1px;
+                        left: 2px;
+                        transition: all 0.3s ease;
+                        display: block;
+                    "></span>
+                </span>
+                <span style="display: flex; align-items: center; gap: 6px; white-space: nowrap;">
+                    <span aria-hidden="true">📏</span> Distância Real
+                </span>
+            </button>
+
+            <a href="asteroids.html"
+               role="link"
+               aria-label="Ver lista completa de todos os asteroides próximos da Terra"
+               tabindex="0"
+               style="
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+                margin-bottom: 6px;
+                width: 100%;
+                padding: 8px;
+                background: var(--bg-secondary);
+                border: 1px solid var(--border-color);
+                border-radius: 6px;
+                color: var(--text-primary);
+                font-weight: 600;
                 text-align: center;
                 text-decoration: none;
-                font-size: 12px;
+                font-size: 11px;
                 transition: all 0.3s;
-            " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-                📋 Ver Todos os Asteroides
+            ">
+                <span aria-hidden="true">📋</span> Todos os Asteroides
             </a>
+
+            <a href="sentry-watch.html"
+               role="link"
+               aria-label="Acessar NASA Sentry Watch - monitoramento de asteroides de longo prazo"
+               tabindex="0"
+               style="
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+                margin-bottom: 6px;
+                width: 100%;
+                padding: 8px;
+                background: var(--bg-secondary);
+                border: 1px solid var(--border-color);
+                border-radius: 6px;
+                color: var(--text-primary);
+                font-weight: 600;
+                text-align: center;
+                text-decoration: none;
+                font-size: 11px;
+                transition: all 0.3s;
+            ">
+                <span aria-hidden="true">🎯</span> Sentry Watch
+            </a>
+
+            <a href="examples.html"
+               role="link"
+               aria-label="Ver exemplos de cenários de impacto pré-configurados"
+               tabindex="0"
+               style="
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+                width: 100%;
+                padding: 8px;
+                background: var(--bg-secondary);
+                border: 1px solid var(--border-color);
+                border-radius: 6px;
+                color: var(--text-primary);
+                font-weight: 600;
+                text-align: center;
+                text-decoration: none;
+                font-size: 11px;
+                transition: all 0.3s;
+            ">
+                <span aria-hidden="true">💡</span> Exemplos
+            </a>
+
+            <style>
+                /* Hover e focus para botões e links */
+                #asteroid-stats a:hover,
+                #asteroid-stats button:hover {
+                    border-color: var(--accent-primary) !important;
+                    background: rgba(0, 229, 255, 0.1) !important;
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 8px rgba(0, 229, 255, 0.2);
+                }
+
+                /* Focus visível para acessibilidade */
+                #asteroid-stats a:focus,
+                #asteroid-stats button:focus {
+                    outline: 3px solid var(--accent-primary);
+                    outline-offset: 2px;
+                    border-color: var(--accent-primary) !important;
+                }
+
+                /* Toggle ativo - estado ON */
+                #distance-toggle-btn.active {
+                    background: rgba(0, 229, 255, 0.15) !important;
+                    border-color: var(--accent-primary) !important;
+                }
+
+                #distance-toggle-btn.active .toggle-indicator {
+                    background: var(--accent-primary) !important;
+                    border-color: var(--accent-primary) !important;
+                }
+
+                #distance-toggle-btn.active .toggle-knob {
+                    left: 16px !important;
+                    background: white !important;
+                    box-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
+                }
+
+                /* Animação do toggle knob */
+                .toggle-knob {
+                    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                                background 0.3s ease !important;
+                }
+
+                .toggle-indicator {
+                    transition: background 0.3s ease,
+                                border-color 0.3s ease !important;
+                }
+
+                /* Suporte para movimento reduzido */
+                @media (prefers-reduced-motion: reduce) {
+                    #asteroid-stats a,
+                    #asteroid-stats button,
+                    .toggle-knob {
+                        transition: none !important;
+                    }
+                }
+
+                /* Teclado navegação */
+                body.keyboard-nav #asteroid-stats a:focus,
+                body.keyboard-nav #asteroid-stats button:focus {
+                    outline: 4px solid var(--accent-primary);
+                    outline-offset: 4px;
+                }
+            </style>
         `;
 
         // Event listener para botão de órbitas
@@ -542,45 +712,139 @@ class AstroShieldViewer {
                 this.asteroidViewer.toggleOrbits(!currentState);
                 console.log(`Órbitas ${!currentState ? 'ativadas' : 'desativadas'}`);
             });
+
+            // Suporte a Enter e Space
+            toggleBtn.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleBtn.click();
+                }
+            });
         }
 
-        // Event listener para checkbox de distância real
-        const distanceToggle = document.getElementById('real-distance-toggle');
-        const distanceModeInfo = document.getElementById('distance-mode-info');
+        // Event listener para botão de distância real (novo toggle switch)
+        const distanceToggleBtn = document.getElementById('distance-toggle-btn');
 
-        if (distanceToggle && this.asteroidViewer) {
-            distanceToggle.addEventListener('change', (e) => {
-                const enabled = e.target.checked;
-                this.asteroidViewer.toggleRealDistanceMode(enabled);
+        if (distanceToggleBtn && this.asteroidViewer) {
+            let isActive = false;
+
+            const toggleDistance = () => {
+                isActive = !isActive;
+
+                console.log(`🔄 Toggling distance mode to: ${isActive ? 'ACTIVE' : 'INACTIVE'}`);
+
+                // Atualizar estado visual COM força
+                if (isActive) {
+                    distanceToggleBtn.classList.add('active');
+                } else {
+                    distanceToggleBtn.classList.remove('active');
+                }
+
+                distanceToggleBtn.setAttribute('aria-checked', isActive.toString());
+
+                // Verificar se classe foi adicionada
+                console.log('Button classes:', distanceToggleBtn.className);
+
+                // Aplicar mudança
+                this.asteroidViewer.toggleRealDistanceMode(isActive);
 
                 // Mostrar/esconder legenda de distâncias
                 const legend = document.getElementById('distance-legend');
                 if (legend) {
-                    legend.classList.toggle('active', enabled);
-                }
-
-                // Atualizar informação do modo
-                if (distanceModeInfo) {
-                    if (enabled) {
-                        distanceModeInfo.innerHTML = `
-                            🌙 Modo: <strong>Distância Real</strong><br>
-                            🎨 Cores: Por proximidade (🔴 < 1 LD, 🟠 1-5 LD, 🟡 5-20 LD, 🟢 > 20 LD)<br>
-                            📏 Referência da Lua visível (linha branca)
-                        `;
+                    if (isActive) {
+                        legend.classList.add('active');
                     } else {
-                        distanceModeInfo.innerHTML = `
-                            🎨 Modo: Visualização (cores por periculosidade)
-                        `;
+                        legend.classList.remove('active');
                     }
                 }
 
-                console.log(`📏 Modo de distância: ${enabled ? 'REAL' : 'VISUALIZAÇÃO'}`);
+                // Anunciar para leitores de tela
+                if (this.announce) {
+                    this.announce(`Modo de distância ${isActive ? 'real ativado' : 'visualização ativado'}`);
+                }
+
+                console.log(`📏 Modo de distância: ${isActive ? 'REAL' : 'VISUALIZAÇÃO'}`);
+            };
+
+            // Click
+            distanceToggleBtn.addEventListener('click', (e) => {
+                console.log('🖱️ Distance toggle clicked');
+                toggleDistance();
             });
+
+            // Suporte a Enter e Space
+            distanceToggleBtn.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    console.log('⌨️ Distance toggle keyboard activated');
+                    toggleDistance();
+                }
+            });
+
+            console.log('✅ Distance toggle button initialized');
+        } else {
+            console.warn('⚠️ Distance toggle button or asteroidViewer not found');
         }
+
+        // Anunciar para leitores de tela
+        this.announce = (message) => {
+            const announcer = document.getElementById('aria-announcements');
+            if (announcer) {
+                announcer.textContent = message;
+                setTimeout(() => {
+                    announcer.textContent = '';
+                }, 3000);
+            }
+        };
     }
 
     getAsteroidViewer() {
         return this.asteroidViewer;
+    }
+
+    /**
+     * Alterna entre visualização 3D e 2D
+     */
+    toggleView(viewType) {
+        this.currentView = viewType;
+
+        const canvas = document.getElementById('canvas-container');
+        const mapContainer = document.getElementById('map-container');
+
+        if (viewType === '3d') {
+            canvas.classList.remove('hidden');
+            mapContainer.classList.remove('active');
+
+            // Anuncia mudança
+            const announcer = document.getElementById('aria-announcements');
+            if (announcer) {
+                announcer.textContent = 'Alternado para visualização 3D do globo';
+            }
+        } else if (viewType === '2d') {
+            canvas.classList.add('hidden');
+            mapContainer.classList.add('active');
+
+            // Inicializar mapa se necessário e redimensionar
+            this.mapView.initializeMap();
+            this.mapView.resize();
+
+            // Se houver resultado de simulação, mostrar no mapa
+            if (this.lastSimulationResults) {
+                this.mapView.showImpact(
+                    this.selectedLocation.lat,
+                    this.selectedLocation.lon,
+                    this.lastSimulationResults
+                );
+            }
+
+            // Anuncia mudança
+            const announcer = document.getElementById('aria-announcements');
+            if (announcer) {
+                announcer.textContent = 'Alternado para visualização 2D do mapa';
+            }
+        }
+
+        console.log(`📍 View changed to: ${viewType}`);
     }
 }
 
@@ -700,6 +964,25 @@ class UIController {
     }
 
     setupEventListeners() {
+        // View toggle buttons
+        const viewToggleButtons = document.querySelectorAll('.view-toggle-btn');
+        viewToggleButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const viewType = e.target.dataset.view;
+
+                // Update active state
+                viewToggleButtons.forEach(b => {
+                    b.classList.remove('active');
+                    b.setAttribute('aria-selected', 'false');
+                });
+                e.target.classList.add('active');
+                e.target.setAttribute('aria-selected', 'true');
+
+                // Toggle view
+                this.viewer.toggleView(viewType);
+            });
+        });
+
         // Atualização em tempo real dos valores
         const diameterSlider = document.getElementById('diameter');
         const velocitySlider = document.getElementById('velocity');
@@ -949,6 +1232,15 @@ class UIController {
         const thermalRadius = ImpactCalculator.calculateThermalRadius(energyMT);
         const comparison = ImpactCalculator.getEnergyComparison(energyMT);
 
+        // Salvar resultados para uso no mapa 2D
+        this.viewer.lastSimulationResults = {
+            energy: energyMT,
+            crater: craterDiameter,
+            seismic: seismicMag,
+            blast: blastRadius,
+            thermal: thermalRadius
+        };
+
         // Atualiza UI
         document.getElementById('energy-value').textContent = energyMT.toFixed(2);
         document.getElementById('crater-value').textContent = craterDiameter.toFixed(2);
@@ -957,12 +1249,21 @@ class UIController {
         document.getElementById('thermal-value').textContent = thermalRadius.toFixed(1);
         document.getElementById('comparison-value').textContent = comparison;
 
-        // Visualiza zona de impacto no globo
+        // Visualiza zona de impacto no globo 3D
         this.viewer.addImpactZone(
             this.viewer.selectedLocation.lat,
             this.viewer.selectedLocation.lon,
             blastRadius
         );
+
+        // Se estiver na visão 2D, atualizar mapa
+        if (this.viewer.currentView === '2d') {
+            this.viewer.mapView.showImpact(
+                this.viewer.selectedLocation.lat,
+                this.viewer.selectedLocation.lon,
+                this.viewer.lastSimulationResults
+            );
+        }
 
         // Anuncia resultado para leitores de tela
         this.announce(`Simulação concluída. Energia liberada: ${energyMT.toFixed(2)} megatons. Raio de devastação: ${blastRadius.toFixed(1)} quilômetros. Magnitude sísmica: ${seismicMag.toFixed(1)} na escala Richter.`);
@@ -997,4 +1298,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
     console.log('🚀 AstroShield inicializado!');
     console.log('📡 Sistema pronto para simulação de impactos asteroidais');
+    console.log('🗺️ Mapa 2D disponível');
+    console.log('🎯 Sentry disponível em: sentry-watch.html');
 });

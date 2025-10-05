@@ -198,6 +198,18 @@
             text-transform: uppercase;
         }
 
+        .sentry-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            background: var(--accent-danger);
+            color: white;
+            margin-left: 8px;
+        }
+
         .hazard-badge.danger {
             background: var(--accent-danger);
             color: white;
@@ -315,7 +327,10 @@
 <body>
     <div id="header">
         <h1>🛰️ Asteroides Próximos da Terra</h1>
-        <a href="index.html" class="back-btn">← Voltar para Simulação</a>
+        <div style="display: flex; gap: 10px;">
+            <a href="sentry-watch.html" class="back-btn" style="background: var(--accent-danger); border-color: var(--accent-danger); color: white;">🎯 Sentry Watch</a>
+            <a href="index.html" class="back-btn">← Voltar para Simulação</a>
+        </div>
     </div>
 
     <div id="stats">
@@ -358,6 +373,7 @@
             <label>Filtrar:</label>
             <select id="filter">
                 <option value="all">Todos</option>
+                <option value="sentry">🎯 Monitorados pelo Sentry</option>
                 <option value="hazardous">Apenas perigosos</option>
                 <option value="safe">Apenas seguros</option>
                 <option value="close">Muito próximos (< 1 LD)</option>

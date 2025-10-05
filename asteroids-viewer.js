@@ -4,11 +4,14 @@
  */
 
 import { CONFIG } from './config.js';
+import { SentryMonitor } from './sentry-integration.js';
 
 class AsteroidsListViewer {
     constructor() {
         this.asteroids = [];
         this.filteredAsteroids = [];
+        this.sentryMonitor = new SentryMonitor();
+        this.sentryData = [];
         this.init();
     }
 
@@ -18,11 +21,27 @@ class AsteroidsListViewer {
         // Carregar asteroides da API
         await this.loadAsteroids();
 
+        // Carregar dados do Sentry em paralelo
+        this.loadSentryData();
+
         // Configurar event listeners
         this.setupEventListeners();
 
         // Renderizar lista inicial
         this.renderAsteroids();
+    }
+
+    async loadSentryData() {
+        try {
+            console.log('🎯 Carregando dados do Sentry...');
+            this.sentryData = await this.sentryMonitor.loadSentryData();
+            console.log(`✅ ${this.sentryData.length} objetos Sentry carregados`);
+
+            // Re-renderizar lista para adicionar badges Sentry
+            this.renderAsteroids();
+        } catch (error) {
+            console.error('❌ Erro ao carregar Sentry:', error);
+        }
     }
 
     async loadAsteroids() {
@@ -147,6 +166,9 @@ class AsteroidsListViewer {
                     return !asteroid.isHazardous;
                 case 'close':
                     return asteroid.distance.lunar < 1;
+                case 'sentry':
+                    // Filtrar apenas asteroides monitorados pelo Sentry
+                    return this.getSentryInfo(asteroid.name) !== null;
                 default:
                     return true;
             }
@@ -195,6 +217,23 @@ class AsteroidsListViewer {
         return 'Distante';
     }
 
+    /**
+     * Verifica se asteroide está na lista Sentry
+     */
+    getSentryInfo(asteroidName) {
+        if (!this.sentryData || this.sentryData.length === 0) return null;
+
+        // Tentar encontrar por nome
+        const cleanName = asteroidName.replace(/[()]/g, '').trim();
+        return this.sentryData.find(obj => {
+            const sentryId = obj.id.replace(/[()]/g, '').trim();
+            const sentryFullName = obj.fullName.replace(/[()]/g, '').trim();
+            return sentryId === cleanName ||
+                   sentryFullName.includes(cleanName) ||
+                   cleanName.includes(sentryId);
+        });
+    }
+
     renderAsteroids() {
         const container = document.getElementById('asteroid-list');
         const noResults = document.getElementById('no-results');
@@ -208,11 +247,16 @@ class AsteroidsListViewer {
         container.style.display = 'grid';
         noResults.style.display = 'none';
 
-        container.innerHTML = this.filteredAsteroids.map(asteroid => `
+        container.innerHTML = this.filteredAsteroids.map(asteroid => {
+            const sentryInfo = this.getSentryInfo(asteroid.name);
+            return `
             <div class="asteroid-card ${asteroid.isHazardous ? 'hazardous' : 'safe'}" data-id="${asteroid.id}">
                 <div class="asteroid-header">
                     <div>
-                        <div class="asteroid-name">${asteroid.name}</div>
+                        <div class="asteroid-name">
+                            ${asteroid.name}
+                            ${sentryInfo ? `<span class="sentry-badge" title="Monitorado pelo Sentry - Torino ${sentryInfo.torinoScale}">🎯 SENTRY</span>` : ''}
+                        </div>
                         <div class="asteroid-id">ID: ${asteroid.id}</div>
                     </div>
                     <div class="hazard-badge ${asteroid.isHazardous ? 'danger' : 'success'}">
@@ -289,7 +333,8 @@ class AsteroidsListViewer {
                     </button>
                 </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
 
         console.log(`✅ ${this.filteredAsteroids.length} asteroides renderizados`);
     }

@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AstroShield - NASA Sentry Watch</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0e27;
+            --bg-secondary: #1a1f3a;
+            --bg-panel: rgba(26, 31, 58, 0.95);
+            --text-primary: #e8eaf6;
+            --text-secondary: #b0b8d4;
+            --accent-primary: #00e5ff;
+            --accent-danger: #ff1744;
+            --accent-warning: #ffd600;
+            --accent-success: #00e676;
+            --border-color: rgba(0, 229, 255, 0.3);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, #1a1f3a 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        #header {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px 30px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #header h1 {
+            font-size: 28px;
+            color: var(--accent-primary);
+        }
+
+        #header .subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        .back-btn {
+            padding: 10px 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--accent-primary);
+            border-radius: 6px;
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: var(--accent-primary);
+            color: var(--bg-primary);
+        }
+
+        #stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-card .label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-card .value {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .stat-card .description {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        #controls {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        #controls input,
+        #controls select {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        #sentry-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .sentry-item {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .sentry-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 229, 255, 0.2);
+        }
+
+        .sentry-item .name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .sentry-item .risk-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .sentry-item .risk-badge.torino-0 {
+            background: #666;
+            color: white;
+        }
+
+        .sentry-item .risk-badge.torino-1 {
+            background: #00e676;
+            color: #0a0e27;
+        }
+
+        .sentry-item .risk-badge.torino-2,
+        .sentry-item .risk-badge.torino-3 {
+            background: #ffd600;
+            color: #0a0e27;
+        }
+
+        .sentry-item .risk-badge.torino-4,
+        .sentry-item .risk-badge.torino-5,
+        .sentry-item .risk-badge.torino-6,
+        .sentry-item .risk-badge.torino-7 {
+            background: #ff9933;
+            color: white;
+        }
+
+        .sentry-item .risk-badge.torino-8,
+        .sentry-item .risk-badge.torino-9,
+        .sentry-item .risk-badge.torino-10 {
+            background: #ff1744;
+            color: white;
+        }
+
+        .sentry-item .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .sentry-item .detail-label {
+            color: var(--text-secondary);
+        }
+
+        .sentry-item .detail-value {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .sentry-item .jpl-link {
+            display: block;
+            margin-top: 15px;
+            padding: 8px;
+            background: var(--accent-primary);
+            color: var(--bg-primary);
+            text-align: center;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .sentry-item .jpl-link:hover {
+            background: #00b8cc;
+        }
+
+        #loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--bg-secondary);
+            border-top: 4px solid var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #timeline-viz {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        #timeline-viz h3 {
+            color: var(--accent-primary);
+            margin-bottom: 20px;
+        }
+
+        .timeline-bar {
+            position: relative;
+            height: 40px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .timeline-event {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            background: var(--accent-danger);
+            border-left: 2px solid var(--accent-primary);
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+
+        .timeline-event:hover {
+            opacity: 1;
+        }
+
+        .timeline-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <div>
+            <h1>🎯 NASA Sentry Watch</h1>
+            <div class="subtitle">Monitoramento de Asteroides com Risco de Impacto (próximos 100 anos)</div>
+        </div>
+        <a href="index.html" class="back-btn">← Voltar</a>
+    </div>
+
+    <div id="stats-overview">
+        <div class="stat-card">
+            <div class="label">Objetos Monitorados</div>
+            <div class="value" id="total-objects">-</div>
+            <div class="description">Asteroides sob vigilância</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Torino Scale Máxima</div>
+            <div class="value" id="max-torino">-</div>
+            <div class="description">Maior nível de risco</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Maior Probabilidade</div>
+            <div class="value" id="max-probability">-</div>
+            <div class="description">Chance de impacto</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Possíveis Impactos</div>
+            <div class="value" id="total-impacts">-</div>
+            <div class="description">Cenários identificados</div>
+        </div>
+    </div>
+
+    <div id="timeline-viz">
+        <h3>📅 Linha do Tempo de Riscos</h3>
+        <div id="timeline-container">
+            <p style="color: var(--text-secondary); font-size: 13px;">Carregando dados de timeline...</p>
+        </div>
+    </div>
+
+    <div id="controls">
+        <input type="text" id="search" placeholder="🔍 Buscar por nome ou ID...">
+        <select id="sort">
+            <option value="risk">Ordenar por Risco (maior)</option>
+            <option value="probability">Probabilidade (maior)</option>
+            <option value="name">Nome (A-Z)</option>
+            <option value="impacts">Impactos Possíveis (maior)</option>
+        </select>
+        <select id="filter">
+            <option value="all">Todos os objetos</option>
+            <option value="torino-1+">Torino 1 ou maior</option>
+            <option value="high-prob">Alta probabilidade</option>
+        </select>
+    </div>
+
+    <div id="loading">
+        <div class="loading-spinner"></div>
+        <p>Carregando dados do NASA Sentry...</p>
+    </div>
+
+    <div id="sentry-list"></div>
+
+    <script type="module">
+        import { SentryMonitor } from './sentry-integration.js';
+
+        class SentryWatchPage {
+            constructor() {
+                this.monitor = new SentryMonitor();
+                this.allObjects = [];
+                this.filteredObjects = [];
+                this.init();
+            }
+
+            async init() {
+                try {
+                    // Carregar dados
+                    this.allObjects = await this.monitor.loadSentryData();
+                    this.filteredObjects = [...this.allObjects];
+
+                    // Renderizar estatísticas
+                    this.renderStats();
+
+                    // Renderizar timeline
+                    this.renderTimeline();
+
+                    // Renderizar lista
+                    this.renderList();
+
+                    // Configurar event listeners
+                    this.setupControls();
+
+                    // Esconder loading
+                    document.getElementById('loading').style.display = 'none';
+
+                } catch (error) {
+                    console.error('Error loading Sentry data:', error);
+                    document.getElementById('loading').innerHTML = `
+                        <p style="color: var(--accent-danger);">
+                            ⚠️ Erro ao carregar dados do Sentry.<br>
+                            Por favor, tente novamente mais tarde.
+                        </p>
+                    `;
+                }
+            }
+
+            renderStats() {
+                const stats = this.monitor.getStatistics();
+
+                document.getElementById('total-objects').textContent = stats.totalObjects;
+                document.getElementById('max-torino').textContent = stats.maxTorinoScale;
+                document.getElementById('max-probability').textContent =
+                    this.monitor.formatProbability(stats.highestProbability);
+                document.getElementById('total-impacts').textContent = stats.totalPossibleImpacts;
+            }
+
+            renderTimeline() {
+                const currentYear = new Date().getFullYear();
+                const endYear = currentYear + 100;
+
+                // Agrupar objetos por década
+                const decades = {};
+                this.allObjects.forEach(obj => {
+                    if (obj.possibleImpactYears && obj.possibleImpactYears.length > 0) {
+                        obj.possibleImpactYears.forEach(year => {
+                            const decade = Math.floor(year / 10) * 10;
+                            if (!decades[decade]) decades[decade] = [];
+                            decades[decade].push(obj);
+                        });
+                    }
+                });
+
+                const container = document.getElementById('timeline-container');
+                container.innerHTML = '';
+
+                if (Object.keys(decades).length === 0) {
+                    container.innerHTML = '<p style="color: var(--text-secondary); font-size: 13px;">Nenhum impacto potencial identificado nos próximos 100 anos.</p>';
+                    return;
+                }
+
+                // Renderizar barra de timeline para cada década
+                Object.keys(decades).sort().forEach(decade => {
+                    const count = decades[decade].length;
+                    const bar = document.createElement('div');
+                    bar.className = 'timeline-bar';
+                    bar.innerHTML = `
+                        <div class="timeline-event" style="width: ${Math.min(count * 5, 100)}%; left: 0;">
+                            <span style="padding: 10px; font-size: 11px; font-weight: 600;">${count} evento(s)</span>
+                        </div>
+                    `;
+
+                    const label = document.createElement('div');
+                    label.className = 'timeline-label';
+                    label.innerHTML = `<span>${decade}s</span><span>${count} possível(is) impacto(s)</span>`;
+
+                    container.appendChild(bar);
+                    container.appendChild(label);
+                });
+            }
+
+            renderList() {
+                const container = document.getElementById('sentry-list');
+
+                if (this.filteredObjects.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 40px;">Nenhum objeto encontrado com os filtros atuais.</p>';
+                    return;
+                }
+
+                container.innerHTML = this.filteredObjects.map(obj => `
+                    <div class="sentry-item">
+                        <div class="name">${obj.fullName}</div>
+                        <span class="risk-badge torino-${obj.torinoScale}">
+                            TORINO SCALE: ${obj.torinoScale}
+                        </span>
+
+                        <div class="detail-row">
+                            <span class="detail-label">Probabilidade de Impacto:</span>
+                            <span class="detail-value">${this.monitor.formatProbability(obj.impactProbability)}</span>
+                        </div>
+
+                        <div class="detail-row">
+                            <span class="detail-label">Palermo Scale:</span>
+                            <span class="detail-value">${obj.palermoScale.toFixed(2)}</span>
+                        </div>
+
+                        <div class="detail-row">
+                            <span class="detail-label">Cenários de Impacto:</span>
+                            <span class="detail-value">${obj.numberOfPossibleImpacts}</span>
+                        </div>
+
+                        ${obj.diameter ? `
+                        <div class="detail-row">
+                            <span class="detail-label">Diâmetro Estimado:</span>
+                            <span class="detail-value">${obj.diameter.toFixed(3)} km</span>
+                        </div>
+                        ` : ''}
+
+                        ${obj.velocity ? `
+                        <div class="detail-row">
+                            <span class="detail-label">Velocidade:</span>
+                            <span class="detail-value">${obj.velocity.toFixed(2)} km/s</span>
+                        </div>
+                        ` : ''}
+
+                        ${obj.energy ? `
+                        <div class="detail-row">
+                            <span class="detail-label">Energia Potencial:</span>
+                            <span class="detail-value">${obj.energy.toFixed(2)} MT</span>
+                        </div>
+                        ` : ''}
+
+                        <div class="detail-row">
+                            <span class="detail-label">Última Observação:</span>
+                            <span class="detail-value">${obj.lastObservation}</span>
+                        </div>
+
+                        <a href="${obj.jplUrl}" target="_blank" class="jpl-link">
+                            🔗 Ver no JPL Small-Body Database
+                        </a>
+                    </div>
+                `).join('');
+            }
+
+            setupControls() {
+                const searchInput = document.getElementById('search');
+                const sortSelect = document.getElementById('sort');
+                const filterSelect = document.getElementById('filter');
+
+                searchInput.addEventListener('input', () => this.applyFilters());
+                sortSelect.addEventListener('change', () => this.applyFilters());
+                filterSelect.addEventListener('change', () => this.applyFilters());
+            }
+
+            applyFilters() {
+                const searchTerm = document.getElementById('search').value.toLowerCase();
+                const sortBy = document.getElementById('sort').value;
+                const filterBy = document.getElementById('filter').value;
+
+                // Filtrar
+                this.filteredObjects = this.allObjects.filter(obj => {
+                    // Busca
+                    const matchesSearch = !searchTerm ||
+                        obj.fullName.toLowerCase().includes(searchTerm) ||
+                        obj.id.toLowerCase().includes(searchTerm);
+
+                    if (!matchesSearch) return false;
+
+                    // Filtros especiais
+                    if (filterBy === 'torino-1+' && obj.torinoScale < 1) return false;
+                    if (filterBy === 'high-prob' && obj.impactProbability < 0.001) return false;
+
+                    return true;
+                });
+
+                // Ordenar
+                this.filteredObjects.sort((a, b) => {
+                    switch (sortBy) {
+                        case 'risk':
+                            if (b.torinoScale !== a.torinoScale) {
+                                return b.torinoScale - a.torinoScale;
+                            }
+                            return b.palermoScale - a.palermoScale;
+                        case 'probability':
+                            return b.impactProbability - a.impactProbability;
+                        case 'name':
+                            return a.fullName.localeCompare(b.fullName);
+                        case 'impacts':
+                            return b.numberOfPossibleImpacts - a.numberOfPossibleImpacts;
+                        default:
+                            return 0;
+                    }
+                });
+
+                this.renderList();
+            }
+        }
+
+        // Inicializar página
+        new SentryWatchPage();
+    </script>
+</body>
+</html>

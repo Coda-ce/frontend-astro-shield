@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AstroShield - Simulação de Impacto de Asteroides</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+
     <style>
         * {
             margin: 0;
@@ -41,6 +52,24 @@
             z-index: 1;
         }
 
+        #map-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            display: none;
+        }
+
+        #map-container.active {
+            display: block;
+        }
+
+        #canvas-container.hidden {
+            display: none;
+        }
+
         #header {
             position: fixed;
             top: 0;
@@ -53,6 +82,7 @@
             align-items: center;
             padding: 0 30px;
             z-index: 100;
+            -webkit-backdrop-filter: blur(10px);
             backdrop-filter: blur(10px);
         }
 
@@ -81,6 +111,7 @@
             padding: 20px;
             z-index: 50;
             overflow-y: auto;
+            -webkit-backdrop-filter: blur(10px);
             backdrop-filter: blur(10px);
         }
 
@@ -96,6 +127,7 @@
             padding: 20px;
             z-index: 50;
             overflow-y: auto;
+            -webkit-backdrop-filter: blur(10px);
             backdrop-filter: blur(10px);
         }
 
@@ -129,6 +161,7 @@
             border-radius: 3px;
             outline: none;
             -webkit-appearance: none;
+            appearance: none;
         }
 
         .input-group input[type="range"]::-webkit-slider-thumb {
@@ -516,6 +549,140 @@
             height: 12px;
             border-radius: 50%;
         }
+
+        /* ========================================
+           VIEW TOGGLE BUTTON
+           ======================================== */
+        #view-toggle {
+            position: fixed;
+            top: 80px;
+            right: 420px;
+            z-index: 100;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            display: flex;
+        }
+
+        .view-toggle-btn {
+            padding: 12px 20px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .view-toggle-btn:last-child {
+            border-right: none;
+        }
+
+        .view-toggle-btn.active {
+            background: var(--accent-primary);
+            color: var(--bg-primary);
+        }
+
+        .view-toggle-btn:hover:not(.active) {
+            background: rgba(0, 229, 255, 0.1);
+            color: var(--accent-primary);
+        }
+
+        /* ========================================
+           SENTRY PANEL
+           ======================================== */
+        #sentry-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 360px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            z-index: 50;
+            backdrop-filter: blur(10px);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        #sentry-panel h3 {
+            font-size: 16px;
+            color: var(--accent-primary);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .sentry-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .sentry-stat-card {
+            background: var(--bg-secondary);
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .sentry-stat-card .label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        .sentry-stat-card .value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .sentry-risk-item {
+            background: var(--bg-secondary);
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border-left: 3px solid var(--accent-danger);
+        }
+
+        .sentry-risk-item .name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .sentry-risk-item .details {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .btn-secondary {
+            width: 100%;
+            padding: 10px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--accent-primary);
+            border-radius: 6px;
+            color: var(--accent-primary);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: var(--accent-primary);
+            color: var(--bg-primary);
+        }
     </style>
 </head>
 <body>
@@ -532,7 +699,18 @@
         <span class="subtitle">Simulação Interativa de Impacto de Asteroides | NASA Space Apps Challenge 2025</span>
     </header>
 
+    <!-- View Toggle Button -->
+    <div id="view-toggle" role="tablist" aria-label="Alternar entre visualização 3D e 2D">
+        <button class="view-toggle-btn active" data-view="3d" role="tab" aria-selected="true" aria-controls="canvas-container">
+            🌍 Globo 3D
+        </button>
+        <button class="view-toggle-btn" data-view="2d" role="tab" aria-selected="false" aria-controls="map-container">
+            🗺️ Mapa 2D
+        </button>
+    </div>
+
     <div id="canvas-container" role="img" aria-label="Visualização 3D interativa da Terra e asteroides"></div>
+    <div id="map-container" role="img" aria-label="Visualização 2D de mapa com zona de impacto"></div>
 
     <!-- Região de anúncios para leitores de tela -->
     <div id="aria-announcements" role="status" aria-live="polite" aria-atomic="true" class="sr-only"></div>
@@ -664,6 +842,8 @@
             </p>
         </div>
     </div>
+
+    <!-- Sentry panel removed - access via Menu de Navegação > Sentry Watch -->
 
     <div id="instructions">
         🖱️ Controles: Arraste para rotacionar | Scroll para zoom | Clique no globo para selecionar local de impacto
